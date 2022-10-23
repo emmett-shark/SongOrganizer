@@ -34,7 +34,7 @@ namespace SongOrganizer.Patches
         static void Prefix(List<SingleTrackData> ___alltrackslist)
         {
             GlobalVariables.sortmode = Plugin.Options.SortMode.Value;
-            if (GlobalVariables.levelselect_index >= ___alltrackslist.Count)
+            if (GlobalVariables.levelselect_index >= GlobalVariables.data_tracktitles.Length)
             {
                 GlobalVariables.levelselect_index = 0;
             }
@@ -70,7 +70,7 @@ namespace SongOrganizer.Patches
                 ___alltrackslist.Clear();
                 ___alltrackslist.AddRange(newTrackData);
             }
-            if (GlobalVariables.levelselect_index >= ___alltrackslist.Count)
+            if (GlobalVariables.levelselect_index >= GlobalVariables.data_tracktitles.Length)
             {
                 GlobalVariables.levelselect_index = 0;
             }
