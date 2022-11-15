@@ -38,6 +38,7 @@ namespace SongOrganizer.Patches
             {
                 GlobalVariables.levelselect_index = 0;
             }
+
         }
 
         static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
@@ -59,7 +60,7 @@ namespace SongOrganizer.Patches
                 if (!showTrack(track)) continue;
                 track.trackindex = newTrackIndex;
                 newTrackrefs.Add(track.trackref);
-                newTracktitles.Add(new string[] { track.trackname_long, track.trackname_short, track.year, track.artist, track.genre, track.desc, track.difficulty.ToString(), track.length.ToString(), track.tempo.ToString() });
+                newTracktitles.Add(new string[] { track.trackname_long, track.trackname_short, track.trackref, track.year, track.artist, track.genre, track.desc, track.difficulty.ToString(), track.length.ToString(), track.tempo.ToString() });
                 newTrackData.Add(track);
                 newTrackIndex++;
             }
@@ -75,8 +76,7 @@ namespace SongOrganizer.Patches
             }
             
             Plugin.Log.LogDebug($"Filter result: {___alltrackslist.Count} found of {Plugin.TrackDict.Count}");
-            MethodInfo method = __instance.GetType().GetMethod("sortTracks",
-    BindingFlags.NonPublic | BindingFlags.Instance);
+            MethodInfo method = __instance.GetType().GetMethod("sortTracks", BindingFlags.NonPublic | BindingFlags.Instance);
             method.Invoke(__instance, new object[] { Plugin.Options.SortMode.Value.ToLower(), false });
         }
 
@@ -122,7 +122,6 @@ namespace SongOrganizer.Patches
                     newTrack.letterScore = scoreFound ? trackScore[1] : "-";
                     newTrack.score = scoreFound ? int.Parse(trackScore[2]) : 0;
                     Plugin.TrackDict.TryAdd(track.trackref, newTrack);
-                    Plugin.Log.LogDebug($"{track.trackref} - {track.trackname_long}");
                 }
             }
             else
