@@ -65,7 +65,6 @@ namespace SongOrganizer.Patches
             }
             if (newTrackrefs.Count > 0)
             {
-                GlobalVariables.data_trackrefs = newTrackrefs.ToArray();
                 GlobalVariables.data_tracktitles = newTracktitles.ToArray();
                 ___alltrackslist.Clear();
                 ___alltrackslist.AddRange(newTrackData);
@@ -123,6 +122,7 @@ namespace SongOrganizer.Patches
                     newTrack.letterScore = scoreFound ? trackScore[1] : "-";
                     newTrack.score = scoreFound ? int.Parse(trackScore[2]) : 0;
                     Plugin.TrackDict.TryAdd(track.trackref, newTrack);
+                    Plugin.Log.LogDebug($"{track.trackref} - {track.trackname_long}");
                 }
             }
             else
