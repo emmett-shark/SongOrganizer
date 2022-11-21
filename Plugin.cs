@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -19,6 +18,7 @@ namespace SongOrganizer
         public static Options Options;
 
         public static Dictionary<string, Track> TrackDict = new Dictionary<string, Track>();
+        public static KeyCode[] KeyCodes = new KeyCode[36];
 
         private const string FILTER_SECTION = "Filter";
         private const string SORT_SECTION = "Sort";
@@ -37,6 +37,14 @@ namespace SongOrganizer
                 ShowSRank = Config.Bind(FILTER_SECTION, nameof(Options.ShowSRank), true),
                 SortMode = Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
             };
+            for (int i = (int)KeyCode.A, j = 0; i <= (int)KeyCode.Z; i++, j++)
+            {
+                KeyCodes[j] = (KeyCode)i;
+            }
+            for (int i = (int)KeyCode.Alpha0, j = 0; i <= (int)KeyCode.Alpha9; i++, j++)
+            {
+                KeyCodes[j + 25] = (KeyCode)i;
+            }
             new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
         }
 

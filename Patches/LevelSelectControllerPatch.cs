@@ -28,6 +28,46 @@ namespace SongOrganizer.Patches
         }
     }
 
+    [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Update))]
+    public class LevelSelectControllerUpdatePatch : MonoBehaviour
+    {
+        static void Postfix(LevelSelectController __instance, ref int ___songindex, ref List<SingleTrackData> ___alltrackslist)
+        {
+            foreach (var keyCode in Plugin.KeyCodes)
+            {
+                if (Input.GetKeyDown(keyCode))
+                {
+                    int increment = findSong((char)keyCode, ___songindex, ___alltrackslist);
+                    if (increment >= 0)
+                    {
+                        MethodInfo method = __instance.GetType().GetMethod("advanceSongs", BindingFlags.NonPublic | BindingFlags.Instance);
+                        method.Invoke(__instance, new object[] { increment, true });
+                    }
+                }
+            }
+        }
+
+        private static int findSong(char key, int ___songindex, List<SingleTrackData> ___alltrackslist)
+        {
+            int increment = 1;
+            for (int i = ___songindex + 1; i < ___alltrackslist.Count; i++, increment++)
+            {
+                if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
+                {
+                    return increment;
+                }
+            }
+            for (int i = 0; i < ___songindex; i++, increment++)
+            {
+                if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
+                {
+                    return increment;
+                }
+            }
+            return -1;
+        }
+    }
+
     [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Start))]
     public class LevelSelectControllerStartPatch : MonoBehaviour
     {
@@ -38,7 +78,6 @@ namespace SongOrganizer.Patches
             {
                 GlobalVariables.levelselect_index = 0;
             }
-
         }
 
         static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
@@ -51,7 +90,6 @@ namespace SongOrganizer.Patches
 
         private static void filterTracks(LevelSelectController __instance, ref List<SingleTrackData> ___alltrackslist)
         {
-            List<string> newTrackrefs = new List<string>();
             List<string[]> newTracktitles = new List<string[]>();
             List<SingleTrackData> newTrackData = new List<SingleTrackData>();
             int newTrackIndex = 0;
@@ -59,12 +97,22 @@ namespace SongOrganizer.Patches
             {
                 if (!showTrack(track)) continue;
                 track.trackindex = newTrackIndex;
-                newTrackrefs.Add(track.trackref);
-                newTracktitles.Add(new string[] { track.trackname_long, track.trackname_short, track.trackref, track.year, track.artist, track.genre, track.desc, track.difficulty.ToString(), track.length.ToString(), track.tempo.ToString() });
+                newTracktitles.Add(new string[] {
+                    track.trackname_long,
+                    track.trackname_short,
+                    track.trackref,
+                    track.year,
+                    track.artist,
+                    track.genre,
+                    track.desc,
+                    track.difficulty.ToString(),
+                    track.length.ToString(),
+                    track.tempo.ToString()
+                });
                 newTrackData.Add(track);
                 newTrackIndex++;
             }
-            if (newTrackrefs.Count > 0)
+            if (newTracktitles.Count > 0)
             {
                 GlobalVariables.data_tracktitles = newTracktitles.ToArray();
                 ___alltrackslist.Clear();
@@ -76,6 +124,7 @@ namespace SongOrganizer.Patches
             }
             
             Plugin.Log.LogDebug($"Filter result: {___alltrackslist.Count} found of {Plugin.TrackDict.Count}");
+
             MethodInfo method = __instance.GetType().GetMethod("sortTracks", BindingFlags.NonPublic | BindingFlags.Instance);
             method.Invoke(__instance, new object[] { Plugin.Options.SortMode.Value.ToLower(), false });
         }
