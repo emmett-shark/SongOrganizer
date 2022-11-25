@@ -15,10 +15,14 @@ public class Plugin : BaseUnityPlugin
     public static Plugin Instance;
     public static ManualLogSource Log;
     public static Toggle Toggle;
+    public static Button Button;
     public static Options Options;
 
     public static Dictionary<string, Track> TrackDict = new Dictionary<string, Track>();
     public static KeyCode[] KeyCodes = new KeyCode[36];
+
+    public const int TRACK_SCORE_LENGTH = 5;
+    public static Button[] DeleteButtons = new Button[TRACK_SCORE_LENGTH];
 
     private const string FILTER_SECTION = "Filter";
     private const string SORT_SECTION = "Sort";

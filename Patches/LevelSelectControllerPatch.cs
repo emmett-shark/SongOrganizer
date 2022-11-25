@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using BepInEx.Configuration;
 using HarmonyLib;
 using SongOrganizer.Data;
@@ -29,6 +28,33 @@ public class LevelSelectControllerUpdateGraphPatch : MonoBehaviour
     }
 }
 
+[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.populateSongNames))]
+public class LevelSelectControllerPopulateSongNamesPatch : MonoBehaviour
+{
+    static void Prefix(ref int ___songindex)
+    {
+        GlobalVariables.levelselect_index = ___songindex;
+    }
+}
+
+[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.clickRandomTrack))]
+public class LevelSelectControllerClickRandomTrackPatch : MonoBehaviour
+{
+    static void Prefix()
+    {
+        Array.ForEach(Plugin.DeleteButtons, i => i.interactable = false);
+    }
+}
+
+[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.doneRandomizing))]
+public class LevelSelectControllerDoneRandomizingPatch : MonoBehaviour
+{
+    static void Postfix()
+    {
+        Array.ForEach(Plugin.DeleteButtons, i => i.interactable = true);
+    }
+}
+
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Update))]
 public class LevelSelectControllerUpdatePatch : MonoBehaviour
 {
@@ -41,8 +67,7 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
                 int increment = findSong((char)keyCode, ___songindex, ___alltrackslist);
                 if (increment >= 0)
                 {
-                    MethodInfo method = __instance.GetType().GetMethod("advanceSongs", BindingFlags.NonPublic | BindingFlags.Instance);
-                    method.Invoke(__instance, new object[] { increment, true });
+                    __instance.GetType().GetMethod("advanceSongs", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { increment, true });
                 }
             }
         }
@@ -72,6 +97,9 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Start))]
 public class LevelSelectControllerStartPatch : MonoBehaviour
 {
+    private const string LEADERBOARD_PATH = "MainCanvas/FullScreenPanel/Leaderboard";
+    private const string SORT_DROPDROPDOWN_PATH = "MainCanvas/FullScreenPanel/sort-dropdown/face";
+
     static void Prefix()
     {
         GlobalVariables.sortmode = Plugin.Options.SortMode.Value;
@@ -83,17 +111,21 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
     static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist, ref int[][] ___songgraphs)
     {
-        //__instance.sortdrop.SetActive(true);
         addOptions(__instance, ___alltrackslist);
         addTracks(___alltrackslist);
         filterTracks(__instance, ref ___alltrackslist);
+        addDeleteButtons(__instance, ___alltrackslist);
+        initializeSongGraphs(ref ___songgraphs);
+    }
 
+    private static void initializeSongGraphs(ref int[][] ___songgraphs)
+    {
         int totalTracks = Math.Max(GlobalVariables.data_tracktitles.Length, Plugin.TrackDict.Count);
         ___songgraphs = new int[totalTracks][];
         for (int i = 0; i < ___songgraphs.Length; i++)
         {
-            ___songgraphs[i] = new int[5];
-            for (int j = 0; j < 5; j++)
+            ___songgraphs[i] = new int[Plugin.TRACK_SCORE_LENGTH];
+            for (int j = 0; j < ___songgraphs[i].Length; j++)
             {
                 ___songgraphs[i][j] = Mathf.FloorToInt(UnityEngine.Random.value * 100f);
             }
@@ -136,8 +168,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         }
         Plugin.Log.LogDebug($"Filter result: {___alltrackslist.Count} found of {Plugin.TrackDict.Count}");
 
-        MethodInfo method = __instance.GetType().GetMethod("sortTracks", BindingFlags.NonPublic | BindingFlags.Instance);
-        method.Invoke(__instance, new object[] { Plugin.Options.SortMode.Value.ToLower(), false });
+        __instance.GetType().GetMethod("sortTracks", BindingFlags.NonPublic | BindingFlags.Instance)
+            .Invoke(__instance, new object[] { Plugin.Options.SortMode.Value.ToLower(), false });
     }
 
     private static bool showTrack(Track track)
@@ -195,18 +227,84 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         bool scoreFound = trackScores.TryGetValue(trackref, out string[] trackScore);
         newTrack.letterScore = scoreFound ? trackScore[1] : "-";
-        newTrack.scores = scoreFound ? trackScore.Skip(2).Select(int.Parse).ToArray() : new int[5];
+        newTrack.scores = scoreFound ? trackScore.Skip(2).Select(int.Parse).ToArray() : new int[Plugin.TRACK_SCORE_LENGTH];
     }
 
-    private static void addDeleteButtons(LevelSelectController __instance)
+    private static void addDeleteButtons(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
     {
-        GameObject face = GameObject.Find("MainCanvas/FullScreenPanel/Leaderboard");
+        GameObject leaderboard = GameObject.Find(LEADERBOARD_PATH);
+        var nums = Enumerable.Range(1, Plugin.TRACK_SCORE_LENGTH).Select(i => i.ToString());
+        Text[] scoreNums = leaderboard.GetComponentsInChildren<Text>()
+            .Where(x => nums.Contains(x.name))
+            .OrderBy(x => x.name).ToArray();
+        for (int i = 0; i < Plugin.TRACK_SCORE_LENGTH; i++)
+        {
+            Plugin.DeleteButtons[i] = addDeleteButton(__instance, scoreNums[i], ___alltrackslist);
+        }
+    }
+
+    private static Button addDeleteButton(LevelSelectController __instance, Text scoreNum, List<SingleTrackData> ___alltrackslist)
+    {
+        int index = int.Parse(scoreNum.name);
+        var scoreRectTransform = scoreNum.GetComponent<RectTransform>();
+        var randomButton = Plugin.Button.GetComponent<Button>();
+        randomButton.onClick.RemoveAllListeners();
+        var deleteButton = Instantiate(randomButton, scoreRectTransform);
+        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
+
+        deleteRectTransform.sizeDelta = new Vector2(12, 12);
+        deleteRectTransform.position = scoreRectTransform.position;
+        deleteRectTransform.anchoredPosition = new Vector2(-20, 6);
+
+        deleteButton.name = $"delete score {index}";
+        deleteButton.onClick.RemoveAllListeners();
+        deleteButton.onClick.AddListener(delegate { delete(__instance, index, ___alltrackslist); });
+
+        var deleteText = deleteButton.GetComponentInChildren<Text>();
+        deleteText.text = "X";
+        deleteText.fontSize = 8;
+        return deleteButton;
+    }
+
+    static void delete(LevelSelectController __instance, int index, List<SingleTrackData> ___alltrackslist)
+    {
+        string trackref = ___alltrackslist[GlobalVariables.levelselect_index].trackref;
+        string shortname = ___alltrackslist[GlobalVariables.levelselect_index].trackname_short;
+        Plugin.Log.LogInfo($"Deleting {shortname} - {index}");
+
+        string[] trackscores = GlobalVariables.localsave.data_trackscores
+            .Where(i => i != null && i[0] == trackref).FirstOrDefault();
+        if (trackscores == null || int.Parse(trackscores[index + 1]) == 0)
+        {
+            Plugin.Log.LogDebug($"No score to delete for {shortname} - {index}");
+            return;
+        }
+
+        Array.ForEach(Plugin.DeleteButtons, i => i.interactable = false);
+        var newTrackScores = new List<string>();
+        for (int i = 2; i < trackscores.Length; i++)
+        {
+            if (i != index + 1)
+            {
+                newTrackScores.Add(trackscores[i]);
+            }
+        }
+        newTrackScores.Add("0");
+        for (int i = 2; i < trackscores.Length; i++)
+        {
+            trackscores[i] = newTrackScores[i - 2];
+        }
+        trackscores[1] = Utils.getBestLetterScore(trackref, int.Parse(trackscores[2]));
+
+        SaverLoader.updateSavedGame();
+        __instance.GetType().GetMethod("populateSongNames", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { true });
+        Array.ForEach(Plugin.DeleteButtons, i => i.interactable = true);
     }
 
     // idk how these numbers work
     private static void addOptions(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
     {
-        GameObject face = GameObject.Find("MainCanvas/FullScreenPanel/sort-dropdown/face");
+        GameObject face = GameObject.Find(SORT_DROPDROPDOWN_PATH);
         RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
         RectTransform faceRectTransform = face.GetComponent<RectTransform>();
         int length = 250, y = -95;

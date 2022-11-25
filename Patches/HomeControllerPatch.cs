@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SongOrganizer.Patches;
 
@@ -10,6 +11,8 @@ public class HomeControllerStartPatch : MonoBehaviour
     static void Postfix(HomeController __instance)
     {
         Plugin.Toggle = Instantiate(__instance.set_tog_accessb_jumpscare);
+        Plugin.Button = Instantiate(__instance.graphicspanel.GetComponentInChildren<Button>());
         DontDestroyOnLoad(Plugin.Toggle);
+        DontDestroyOnLoad(Plugin.Button);
     }
 }
