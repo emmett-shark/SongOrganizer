@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using BepInEx.Configuration;
 using HarmonyLib;
 using SongOrganizer.Data;
@@ -99,6 +100,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 {
     private const string LEADERBOARD_PATH = "MainCanvas/FullScreenPanel/Leaderboard";
     private const string SORT_DROPDROPDOWN_PATH = "MainCanvas/FullScreenPanel/sort-dropdown/face";
+    private const string HIGH_SCORES_PATH = "\"HIGH SCORES\"";
 
     static void Prefix()
     {
@@ -234,36 +236,77 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         GameObject leaderboard = GameObject.Find(LEADERBOARD_PATH);
         var nums = Enumerable.Range(1, Plugin.TRACK_SCORE_LENGTH).Select(i => i.ToString());
-        Text[] scoreNums = leaderboard.GetComponentsInChildren<Text>()
-            .Where(x => nums.Contains(x.name))
+        Text[] leaderboardText = leaderboard.GetComponentsInChildren<Text>();
+        Text[] scoreNums = leaderboardText.Where(x => nums.Contains(x.name))
             .OrderBy(x => x.name).ToArray();
-        for (int i = 0; i < Plugin.TRACK_SCORE_LENGTH; i++)
+        for (int i = 1; i <= Plugin.TRACK_SCORE_LENGTH; i++)
         {
-            Plugin.DeleteButtons[i] = addDeleteButton(__instance, scoreNums[i], ___alltrackslist);
+            Plugin.DeleteButtons[i] = deleteSingleScoreButton(__instance, scoreNums[i - 1], ___alltrackslist);
         }
+        Text highScoreText = leaderboardText.Where(i => i.name.ToUpper().Equals(HIGH_SCORES_PATH)).FirstOrDefault();
+        Plugin.DeleteButtons[0] = deleteTrackScoresButton(__instance, scoreNums[0], ___alltrackslist);
     }
 
-    private static Button addDeleteButton(LevelSelectController __instance, Text scoreNum, List<SingleTrackData> ___alltrackslist)
+    private static Button deleteTrackScoresButton(LevelSelectController __instance, Text scoreText, List<SingleTrackData> ___alltrackslist)
     {
-        int index = int.Parse(scoreNum.name);
-        var scoreRectTransform = scoreNum.GetComponent<RectTransform>();
-        var randomButton = Plugin.Button.GetComponent<Button>();
-        randomButton.onClick.RemoveAllListeners();
-        var deleteButton = Instantiate(randomButton, scoreRectTransform);
+        Button deleteButton = addDeleteButton(scoreText);
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
+        deleteRectTransform.localPosition = new Vector2(-10, 25);
+        Plugin.Log.LogDebug($"xxx Delete button x: {deleteRectTransform.position} {deleteRectTransform.anchoredPosition} {deleteRectTransform.localPosition}");
+        deleteButton.name = $"delete track scores";
+        deleteButton.onClick.AddListener(delegate { delete(__instance, ___alltrackslist); });
+        return deleteButton;
+    }
+
+    private static Button deleteSingleScoreButton(LevelSelectController __instance, Text scoreText, List<SingleTrackData> ___alltrackslist)
+    {
+        Button deleteButton = addDeleteButton(scoreText);
+        int index = int.Parse(scoreText.name);
+        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
+        Plugin.Log.LogDebug($"xxx Delete button {index}: {deleteRectTransform.position} {deleteRectTransform.anchoredPosition} {deleteRectTransform.localPosition}");
+        deleteButton.name = $"delete score {index}";
+        deleteButton.onClick.AddListener(delegate { delete(__instance, index, ___alltrackslist); });
+        return deleteButton;
+    }
+
+    private static Button addDeleteButton(Text scoreText)
+    {
+        var scoreRectTransform = scoreText.GetComponent<RectTransform>();
+        var deleteButton = Instantiate(Plugin.Button, scoreRectTransform);
+        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
+        deleteButton.onClick.RemoveAllListeners();
 
         deleteRectTransform.sizeDelta = new Vector2(12, 12);
         deleteRectTransform.position = scoreRectTransform.position;
         deleteRectTransform.anchoredPosition = new Vector2(-20, 6);
 
-        deleteButton.name = $"delete score {index}";
-        deleteButton.onClick.RemoveAllListeners();
-        deleteButton.onClick.AddListener(delegate { delete(__instance, index, ___alltrackslist); });
-
         var deleteText = deleteButton.GetComponentInChildren<Text>();
         deleteText.text = "X";
         deleteText.fontSize = 8;
         return deleteButton;
+    }
+
+    static void delete(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
+    {
+        string trackref = ___alltrackslist[GlobalVariables.levelselect_index].trackref;
+        string shortname = ___alltrackslist[GlobalVariables.levelselect_index].trackname_short;
+        Plugin.Log.LogInfo($"Deleting all scores for {shortname}");
+
+        string[] trackscores = GlobalVariables.localsave.data_trackscores
+            .Where(i => i != null && i[0] == trackref).FirstOrDefault();
+        if (trackscores == null || trackscores[1] == "-")
+        {
+            Plugin.Log.LogDebug($"No score to delete for {shortname}");
+            return;
+        }
+        trackscores[1] = "-";
+        for (int i = 2; i < trackscores.Length; i++)
+        {
+            trackscores[i] = "0";
+        }
+
+        SaverLoader.updateSavedGame();
+        __instance.GetType().GetMethod("populateSongNames", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { true });
     }
 
     static void delete(LevelSelectController __instance, int index, List<SingleTrackData> ___alltrackslist)
@@ -280,7 +323,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             return;
         }
 
-        Array.ForEach(Plugin.DeleteButtons, i => i.interactable = false);
         var newTrackScores = new List<string>();
         for (int i = 2; i < trackscores.Length; i++)
         {
@@ -298,7 +340,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
         SaverLoader.updateSavedGame();
         __instance.GetType().GetMethod("populateSongNames", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { true });
-        Array.ForEach(Plugin.DeleteButtons, i => i.interactable = true);
     }
 
     // idk how these numbers work

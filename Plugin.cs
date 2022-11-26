@@ -22,7 +22,7 @@ public class Plugin : BaseUnityPlugin
     public static KeyCode[] KeyCodes = new KeyCode[36];
 
     public const int TRACK_SCORE_LENGTH = 5;
-    public static Button[] DeleteButtons = new Button[TRACK_SCORE_LENGTH];
+    public static Button[] DeleteButtons = new Button[TRACK_SCORE_LENGTH + 1];
 
     private const string FILTER_SECTION = "Filter";
     private const string SORT_SECTION = "Sort";

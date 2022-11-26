@@ -1,18 +1,21 @@
 # SongOrganizer
 
 ## Features
-- Filters by default/custom, played/unplayed, S-ranked/non-S-ranked tracks
-- Saves your sort and filter configuration to `<TromboneChampDir>/BepInEx/config/SongOrganizer.cfg`
-- Searches by first letter: typing a character (A-Z, 0-9) in track select will hop to the next track whose short name starts with that character
-- Deletes highscores
+- Filter by default/custom, played/unplayed, S-ranked/non-S-ranked tracks
+- Save your sort and filter configuration to `<TromboneChampDir>/BepInEx/config/SongOrganizer.cfg`
+- Search by first letter: typing a character (A-Z, 0-9) in track select will hop to the next track whose short name starts with that character
+- Delete highscores individually and by song
 
 ## Usage
 - Install BepInEx if you have not already done so. [Guide](https://trombone.wiki/#/installing-mods)
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.0.5
+- Ability to delete all highscores of a song
+
 v1.0.4
-- Ability to delete highscores
+- Ability to delete highscores individually
 - Fix bug in not being able to search by "Z"
 - Fix sometimes bug when exiting the level select with stuff filtered out, coming back in, unfiltering, then selecting something near the end of the list
 
