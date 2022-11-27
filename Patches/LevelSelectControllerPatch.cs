@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using BepInEx.Configuration;
 using HarmonyLib;
 using SongOrganizer.Data;
@@ -252,7 +251,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Button deleteButton = addDeleteButton(scoreText);
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
         deleteRectTransform.localPosition = new Vector2(-10, 25);
-        Plugin.Log.LogDebug($"xxx Delete button x: {deleteRectTransform.position} {deleteRectTransform.anchoredPosition} {deleteRectTransform.localPosition}");
         deleteButton.name = $"delete track scores";
         deleteButton.onClick.AddListener(delegate { delete(__instance, ___alltrackslist); });
         return deleteButton;
@@ -263,7 +261,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Button deleteButton = addDeleteButton(scoreText);
         int index = int.Parse(scoreText.name);
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
-        Plugin.Log.LogDebug($"xxx Delete button {index}: {deleteRectTransform.position} {deleteRectTransform.anchoredPosition} {deleteRectTransform.localPosition}");
         deleteButton.name = $"delete score {index}";
         deleteButton.onClick.AddListener(delegate { delete(__instance, index, ___alltrackslist); });
         return deleteButton;

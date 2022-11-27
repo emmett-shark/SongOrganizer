@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>SongOrganizer</AssemblyName>
     <Description>Trombone Champ: Searching, Filtering, and Sorting</Description>
-    <Version>1.0.5</Version>
+    <Version>1.0.51</Version>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

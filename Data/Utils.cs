@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,12 +25,9 @@ public class Utils
         List<float[]> levelData = !File.Exists(baseTmb)
             ? GetCustomLevelData(trackRef)
             : GetSavedLevel(baseTmb).savedleveldata;
+
         return levelData.Sum(noteData =>
-        {
-            float num1 = Mathf.Floor(noteData[1] * 10f);
-            float f = Mathf.Floor(num1 * 100f * 1.3f) * 10f;
-            return Mathf.FloorToInt(f);
-        });
+            (int)Mathf.Floor(Mathf.Floor(Mathf.Floor(noteData[1] * 10f) * 100f * 1.3f) * 10f));
     }
 
     private static List<float[]> GetCustomLevelData(string trackRef)

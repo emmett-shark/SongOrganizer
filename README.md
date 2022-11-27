@@ -11,6 +11,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.0.51
+- Fix bug in calculating max score
+
 v1.0.5
 - Ability to delete all highscores of a song
 
