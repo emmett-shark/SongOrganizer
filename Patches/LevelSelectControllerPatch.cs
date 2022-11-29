@@ -250,7 +250,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         Button deleteButton = addDeleteButton(scoreText);
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
-        deleteRectTransform.localPosition = new Vector2(-10, 25);
+        deleteRectTransform.localPosition = new Vector2(-10, 20);
         deleteButton.name = $"delete track scores";
         deleteButton.onClick.AddListener(delegate { delete(__instance, ___alltrackslist); });
         return deleteButton;
@@ -275,7 +275,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
         deleteRectTransform.sizeDelta = new Vector2(12, 12);
         deleteRectTransform.position = scoreRectTransform.position;
-        deleteRectTransform.anchoredPosition = new Vector2(-20, 6);
+        deleteRectTransform.anchoredPosition = new Vector2(-20, 10);
 
         var deleteText = deleteButton.GetComponentInChildren<Text>();
         deleteText.text = "X";

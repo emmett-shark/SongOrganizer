@@ -11,6 +11,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.0.6
+- Fix alignment issues for Trombone Champ 1.087
+
 v1.0.51
 - Fix bug in calculating max score
 
