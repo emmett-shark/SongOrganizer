@@ -99,7 +99,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 {
     private const string LEADERBOARD_PATH = "MainCanvas/FullScreenPanel/Leaderboard";
     private const string SORT_DROPDROPDOWN_PATH = "MainCanvas/FullScreenPanel/sort-dropdown/face";
-    private const string HIGH_SCORES_PATH = "\"HIGH SCORES\"";
 
     static void Prefix()
     {
@@ -242,7 +241,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         {
             Plugin.DeleteButtons[i] = deleteSingleScoreButton(__instance, scoreNums[i - 1], ___alltrackslist);
         }
-        Text highScoreText = leaderboardText.Where(i => i.name.ToUpper().Equals(HIGH_SCORES_PATH)).FirstOrDefault();
         Plugin.DeleteButtons[0] = deleteTrackScoresButton(__instance, scoreNums[0], ___alltrackslist);
     }
 
