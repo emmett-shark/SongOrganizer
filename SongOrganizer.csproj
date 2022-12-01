@@ -5,6 +5,7 @@
     <Description>Trombone Champ: Searching, Filtering, and Sorting</Description>
     <Version>1.0.6</Version>
     <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,9 +23,6 @@
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(TromboneChampDir)\TromboneChamp_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>$(TromboneChampDir)\TromboneChamp_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(TromboneChampDir)\TromboneChamp_Data\Managed\UnityEngine.CoreModule.dll</HintPath>

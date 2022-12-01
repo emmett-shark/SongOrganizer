@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using BepInEx.Configuration;
 using HarmonyLib;
 using SongOrganizer.Data;
@@ -67,7 +66,7 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
                 int increment = findSong((char)keyCode, ___songindex, ___alltrackslist);
                 if (increment >= 0)
                 {
-                    __instance.GetType().GetMethod("advanceSongs", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { increment, true });
+                    __instance.advanceSongs(increment, true);
                 }
             }
         }
@@ -168,8 +167,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         }
         Plugin.Log.LogDebug($"Filter result: {___alltrackslist.Count} found of {Plugin.TrackDict.Count}");
 
-        __instance.GetType().GetMethod("sortTracks", BindingFlags.NonPublic | BindingFlags.Instance)
-            .Invoke(__instance, new object[] { Plugin.Options.SortMode.Value.ToLower(), false });
+        __instance.sortTracks(Plugin.Options.SortMode.Value.ToLower(), false);
     }
 
     private static bool showTrack(Track track)
@@ -301,7 +299,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         }
 
         SaverLoader.updateSavedGame();
-        __instance.GetType().GetMethod("populateSongNames", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { true });
+        __instance.populateSongNames(true);
     }
 
     static void delete(LevelSelectController __instance, int index, List<SingleTrackData> ___alltrackslist)
@@ -334,7 +332,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         trackscores[1] = Utils.getBestLetterScore(trackref, int.Parse(trackscores[2]));
 
         SaverLoader.updateSavedGame();
-        __instance.GetType().GetMethod("populateSongNames", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { true });
+        __instance.populateSongNames(true);
     }
 
     // idk how these numbers work
