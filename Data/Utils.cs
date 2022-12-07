@@ -27,7 +27,7 @@ public class Utils
             : GetSavedLevel(baseTmb).savedleveldata;
 
         return levelData.Sum(noteData =>
-            (int)Mathf.Floor(Mathf.Floor(Mathf.Floor(noteData[1] * 10f) * 100f * 1.3f) * 10f));
+            (int)Mathf.Floor(Mathf.Floor(noteData[1] * 10f * 100f * 1.3f) * 10f));
     }
 
     private static List<float[]> GetCustomLevelData(string trackRef)
