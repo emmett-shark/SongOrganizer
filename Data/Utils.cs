@@ -16,7 +16,7 @@ public class Utils
     {
         if (bestScore == 0) return "-";
         float num = (float)bestScore / getMaxScore(trackRef);
-        return (double)num <= 1.0 ? ((double)num <= 0.800000011920929 ? ((double)num <= 0.600000023841858 ? ((double)num <= 0.400000005960464 ? ((double)num <= 0.200000002980232 ? "F" : "D") : "C") : "B") : "A") : "S";
+        return num < 1f ? (num < 0.8f ? (num < 0.6f ? (num < 0.4f ? (num < 0.2f ? "F" : "D") : "C") : "B") : "A") : "S";
     }
 
     public static int getMaxScore(string trackRef)
