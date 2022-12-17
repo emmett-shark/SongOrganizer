@@ -6,6 +6,7 @@
     <Version>1.0.7</Version>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <TromboneChampDir>E:\SteamLibrary\steamapps\common\TromboneChamp</TromboneChampDir>
   </PropertyGroup>
 
   <ItemGroup>

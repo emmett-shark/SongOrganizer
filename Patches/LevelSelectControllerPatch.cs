@@ -258,7 +258,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         Button deleteButton = addDeleteButton(scoreText);
         int index = int.Parse(scoreText.name);
-        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
         deleteButton.name = $"delete score {index}";
         deleteButton.onClick.AddListener(delegate { delete(__instance, index, ___alltrackslist); });
         return deleteButton;
