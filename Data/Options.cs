@@ -12,4 +12,5 @@ public class Options
     public ConfigEntry<bool> ShowNotSRank { get; set; }
     public ConfigEntry<bool> ShowSRank { get; set; }
     public ConfigEntry<string> SortMode { get; set; }
+    public ConfigEntry<int> LastIndex { get; set; }
 }
