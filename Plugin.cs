@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SongOrganizer.Data;
@@ -26,6 +27,7 @@ public class Plugin : BaseUnityPlugin
 
     private const string FILTER_SECTION = "Filter";
     private const string SORT_SECTION = "Sort";
+    private const string INDEX_SECTION = "Index";
 
     private void Awake()
     {
@@ -33,13 +35,14 @@ public class Plugin : BaseUnityPlugin
         Log = Logger;
         Options = new Options
         {
-            ShowDefault = Config.Bind(FILTER_SECTION, nameof(Options.ShowDefault), true),
-            ShowCustom = Config.Bind(FILTER_SECTION, nameof(Options.ShowCustom), true),
-            ShowUnplayed = Config.Bind(FILTER_SECTION, nameof(Options.ShowUnplayed), true),
-            ShowPlayed = Config.Bind(FILTER_SECTION, nameof(Options.ShowPlayed), true),
-            ShowNotSRank = Config.Bind(FILTER_SECTION, nameof(Options.ShowNotSRank), true),
-            ShowSRank = Config.Bind(FILTER_SECTION, nameof(Options.ShowSRank), true),
-            SortMode = Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
+            ShowDefault = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowDefault), true),
+            ShowCustom = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowCustom), true),
+            ShowUnplayed = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowUnplayed), true),
+            ShowPlayed = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowPlayed), true),
+            ShowNotSRank = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowNotSRank), true),
+            ShowSRank = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowSRank), true),
+            SortMode = base.Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
+            LastIndex = base.Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
         };
         for (int i = (int)KeyCode.A, j = 0; i <= (int)KeyCode.Z; i++, j++)
         {

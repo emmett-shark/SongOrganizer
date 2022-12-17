@@ -33,6 +33,7 @@ public class LevelSelectControllerPopulateSongNamesPatch : MonoBehaviour
     static void Prefix(ref int ___songindex)
     {
         GlobalVariables.levelselect_index = ___songindex;
+        Plugin.Options.LastIndex.Value = ___songindex;
     }
 }
 
@@ -102,6 +103,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     static void Prefix()
     {
         GlobalVariables.sortmode = Plugin.Options.SortMode.Value;
+        GlobalVariables.levelselect_index = Plugin.Options.LastIndex.Value;
         if (GlobalVariables.levelselect_index >= GlobalVariables.data_tracktitles.Length)
         {
             GlobalVariables.levelselect_index = 0;
@@ -256,7 +258,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         Button deleteButton = addDeleteButton(scoreText);
         int index = int.Parse(scoreText.name);
-        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
         deleteButton.name = $"delete score {index}";
         deleteButton.onClick.AddListener(delegate { delete(__instance, index, ___alltrackslist); });
         return deleteButton;
