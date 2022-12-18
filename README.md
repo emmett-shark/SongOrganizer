@@ -2,7 +2,7 @@
 
 ## Features
 - Filter by default/custom, played/unplayed, S-ranked/non-S-ranked tracks
-- Save your sort and filter configuration to `<TromboneChampDir>/BepInEx/config/SongOrganizer.cfg`
+- Save your sort, filter, last song index to `<TromboneChampDir>/BepInEx/config/SongOrganizer.cfg`
 - Search by first letter: typing a character (A-Z, 0-9) in track select will hop to the next track whose short name starts with that character
 - Delete highscores individually and by song
 
@@ -11,6 +11,12 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.0.8
+- Save last played song in config. Thanks @Electrostats!
+
+v1.0.7
+- Max score changes for TC 1.0881
+
 v1.0.6
 - Fix alignment issues for Trombone Champ 1.087
 
