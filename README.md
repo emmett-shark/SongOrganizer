@@ -11,6 +11,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.0.9
+- Delete button changes, remove #1 star for TC 1.09
+
 v1.0.8
 - Save last played song in config. Thanks @Electrostats!
 
