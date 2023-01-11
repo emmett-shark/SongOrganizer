@@ -233,6 +233,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private static void addDeleteButtons(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
     {
         GameObject leaderboard = GameObject.Find(LEADERBOARD_PATH);
+        Destroy(leaderboard.GetComponentsInChildren<Image>()?.Where(i => i.name == "#1 star").FirstOrDefault());
+
         var nums = Enumerable.Range(1, Plugin.TRACK_SCORE_LENGTH).Select(i => i.ToString());
         Text[] leaderboardText = leaderboard.GetComponentsInChildren<Text>();
         Text[] scoreNums = leaderboardText.Where(x => nums.Contains(x.name))
@@ -248,7 +250,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         Button deleteButton = addDeleteButton(scoreText);
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
-        deleteRectTransform.localPosition = new Vector2(-10, 20);
+        deleteRectTransform.localPosition = new Vector2(-15, 30);
         deleteButton.name = $"delete track scores";
         deleteButton.onClick.AddListener(delegate { delete(__instance, ___alltrackslist); });
         return deleteButton;
@@ -270,13 +272,13 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
         deleteButton.onClick.RemoveAllListeners();
 
-        deleteRectTransform.sizeDelta = new Vector2(12, 12);
+        deleteRectTransform.sizeDelta = new Vector2(18, 18);
         deleteRectTransform.position = scoreRectTransform.position;
-        deleteRectTransform.anchoredPosition = new Vector2(-20, 10);
+        deleteRectTransform.anchoredPosition = new Vector2(-25, 5);
 
         var deleteText = deleteButton.GetComponentInChildren<Text>();
         deleteText.text = "X";
-        deleteText.fontSize = 8;
+        deleteText.fontSize = 15;
         return deleteButton;
     }
 
