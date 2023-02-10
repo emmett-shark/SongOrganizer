@@ -55,42 +55,30 @@ public class LevelSelectControllerDoneRandomizingPatch : MonoBehaviour
     }
 }
 
-[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Update))]
+[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.searchForSongName))]
 public class LevelSelectControllerUpdatePatch : MonoBehaviour
 {
-    static void Postfix(LevelSelectController __instance, ref int ___songindex, ref List<SingleTrackData> ___alltrackslist)
+    static bool Prefix(string startingletter, LevelSelectController __instance, ref int ___songindex, ref List<SingleTrackData> ___alltrackslist)
     {
-        foreach (var keyCode in Plugin.KeyCodes)
-        {
-            if (Input.GetKeyDown(keyCode))
-            {
-                int increment = findSong((char)keyCode, ___songindex, ___alltrackslist);
-                if (increment >= 0)
-                {
-                    __instance.advanceSongs(increment, true);
-                }
-            }
-        }
-    }
-
-    private static int findSong(char key, int ___songindex, List<SingleTrackData> ___alltrackslist)
-    {
+        char key = startingletter.ToLower()[0];
         int increment = 1;
         for (int i = ___songindex + 1; i < ___alltrackslist.Count; i++, increment++)
         {
             if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
             {
-                return increment;
+                __instance.advanceSongs(increment, true);
+                return false;
             }
         }
         for (int i = 0; i < ___songindex; i++, increment++)
         {
             if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
             {
-                return increment;
+                __instance.advanceSongs(increment, true);
+                return false;
             }
         }
-        return -1;
+        return false;
     }
 }
 
