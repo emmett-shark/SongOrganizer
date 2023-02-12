@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using SongOrganizer.Data;
@@ -62,6 +63,7 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
 {
     static bool Prefix(string startingletter, LevelSelectController __instance, ref int ___songindex, ref List<SingleTrackData> ___alltrackslist)
     {
+        if (Plugin.SearchInput.isFocused) return false;
         char key = startingletter.ToLower()[0];
         int increment = 1;
         for (int i = ___songindex + 1; i < ___alltrackslist.Count; i++, increment++)
@@ -90,7 +92,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private const string FULLSCREENPANEL = "MainCanvas/FullScreenPanel/";
     private const string LEADERBOARD_PATH = $"{FULLSCREENPANEL}Leaderboard";
     private const string SORT_DROPDROPDOWN_PATH = $"{FULLSCREENPANEL}sort-dropdown/face";
-    private const string TITLE_PATH = $"{FULLSCREENPANEL}title";
+    private const string SCROLL_SPEED_PATH = $"{FULLSCREENPANEL}ScrollSpeedShad/ScrollSpeed";
+    private const string TITLE_BAR = $"{FULLSCREENPANEL}title bar";
 
     static void Prefix()
     {
@@ -106,10 +109,23 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         AddOptions(__instance, ___alltrackslist);
         AddTracks(___alltrackslist);
+        AddSearchBar(__instance, ___alltrackslist);
         FilterTracks(__instance, ref ___alltrackslist);
         AddDeleteButtons(__instance, ___alltrackslist);
         InitializeSongGraphs(ref ___songgraphs);
-        AddSearchBar(__instance);
+    }
+
+    private static void SearchListener(string val, LevelSelectController __instance, ref List<SingleTrackData> ___alltrackslist)
+    {
+        Plugin.Log.LogDebug($"search: {val}");
+        Plugin.Options.SearchValue.Value = val;
+        FilterTracks(__instance, ref ___alltrackslist);
+    }
+
+    private static void ToggleListener(ConfigEntry<bool> configEntry, bool b, LevelSelectController __instance, ref List<SingleTrackData> ___alltrackslist)
+    {
+        configEntry.Value = b;
+        FilterTracks(__instance,  ref ___alltrackslist);
     }
 
     #region AddOptions
@@ -128,10 +144,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             ConfigEntry<bool> configEntry = GetConfigEntry(filterOption);
             if (configEntry == null) continue;
             toggle.isOn = configEntry.Value;
-            toggle.onValueChanged.AddListener(b => {
-                configEntry.Value = b;
-                FilterTracks(__instance, ref ___alltrackslist);
-            });
+            toggle.onValueChanged.AddListener(b => ToggleListener(configEntry, b, __instance, ref ___alltrackslist));
         }
         foreach (var button in face.GetComponentsInChildren<Button>())
         {
@@ -285,11 +298,22 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         return ShowTrack(Plugin.Options.ShowCustom.Value, Plugin.Options.ShowDefault.Value, track.custom)
             && ShowTrack(Plugin.Options.ShowPlayed.Value, Plugin.Options.ShowUnplayed.Value, track.letterScore != "-")
             && ShowTrack(Plugin.Options.ShowSRank.Value, Plugin.Options.ShowNotSRank.Value, track.letterScore == "S")
-            && ShowTrack(Plugin.Options.ShowRated.Value, Plugin.Options.ShowUnrated.Value, track.rated);
+            && ShowTrack(Plugin.Options.ShowRated.Value, Plugin.Options.ShowUnrated.Value, track.rated)
+            && ShowTrack(Plugin.Options.SearchValue.Value, track);
     }
 
     private static bool ShowTrack(bool optionToggle, bool oppositeOptionToggle, bool option) =>
         optionToggle == oppositeOptionToggle ? true : optionToggle == option;
+
+    private static bool ShowTrack(string searchVal, Track track)
+    {
+        if (searchVal.IsNullOrWhiteSpace()) return true;
+        string search = searchVal.ToLower().Trim();
+        return track.trackname_long.ToLower().Contains(search) 
+            || track.trackname_short.ToLower().Contains(search)
+            || track.artist.ToLower().Contains(search)
+            || track.desc.ToLower().Contains(search);
+    }
     #endregion
 
     #region AddDeleteButtons
@@ -419,12 +443,30 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     #endregion
 
     #region AddSearchBar
-    private static void AddSearchBar(LevelSelectController __instance)
+    private static void AddSearchBar(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
     {
-/*        var title = GameObject.Find(TITLE_PATH);
-        var input = title.AddComponent<InputField>();
-        input.name = "search";
-        input.textComponent = title.GetComponent<Text>();*/
+        var fullscreenPanel = GameObject.Find(FULLSCREENPANEL);
+
+        var titleBar = Instantiate(GameObject.Find(TITLE_BAR), fullscreenPanel.transform);
+        titleBar.name = "search underline";
+        var titleRectTransform = titleBar.GetComponent<RectTransform>();
+        titleRectTransform.anchoredPosition = new Vector2(145, -30);
+        titleRectTransform.sizeDelta = new Vector2(275, 200);
+
+        var searchBar = Instantiate(GameObject.Find(SCROLL_SPEED_PATH), fullscreenPanel.transform);
+        var searchRectTransform = searchBar.GetComponent<RectTransform>();
+        searchRectTransform.anchoredPosition = new Vector2(-130, 200);
+        searchRectTransform.sizeDelta = new Vector2(250, 14);
+
+        var searchText = searchBar.transform.GetComponent<Text>();
+        searchText.text = Plugin.Options.SearchValue.Value;
+
+        Plugin.SearchInput = searchBar.AddComponent<InputField>();
+        Plugin.SearchInput.textComponent = searchText;
+        Plugin.SearchInput.name = "search";
+        Plugin.SearchInput.onValueChanged.AddListener(val => SearchListener(val, __instance, ref ___alltrackslist));
+
+        Destroy(__instance.scenetitle);
     }
     #endregion
 }

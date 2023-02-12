@@ -14,4 +14,5 @@ public class Options
     public ConfigEntry<bool> ShowRated { get; set; }
     public ConfigEntry<string> SortMode { get; set; }
     public ConfigEntry<int> LastIndex { get; set; }
+    public ConfigEntry<string> SearchValue { get; set; }
 }

@@ -13,9 +13,11 @@ public class Plugin : BaseUnityPlugin
 {
     public static Plugin Instance;
     public static ManualLogSource Log;
+    public static Options Options;
+
     public static Toggle Toggle;
     public static Button Button;
-    public static Options Options;
+    public static InputField SearchInput;
 
     public static Dictionary<string, Track> TrackDict = new Dictionary<string, Track>();
     public static KeyCode[] KeyCodes = new KeyCode[36];
@@ -26,6 +28,7 @@ public class Plugin : BaseUnityPlugin
     private const string FILTER_SECTION = "Filter";
     private const string SORT_SECTION = "Sort";
     private const string INDEX_SECTION = "Index";
+    private const string SEARCH_SECTION = "Search";
 
     private void Awake()
     {
@@ -43,6 +46,7 @@ public class Plugin : BaseUnityPlugin
             ShowRated = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowRated), true),
             SortMode = base.Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
             LastIndex = base.Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
+            SearchValue = base.Config.Bind(SEARCH_SECTION, nameof(Options.SearchValue), ""),
         };
         for (int i = (int)KeyCode.A, j = 0; i <= (int)KeyCode.Z; i++, j++)
         {
