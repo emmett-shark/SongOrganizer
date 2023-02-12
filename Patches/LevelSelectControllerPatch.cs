@@ -87,8 +87,10 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Start))]
 public class LevelSelectControllerStartPatch : MonoBehaviour
 {
-    private const string LEADERBOARD_PATH = "MainCanvas/FullScreenPanel/Leaderboard";
-    private const string SORT_DROPDROPDOWN_PATH = "MainCanvas/FullScreenPanel/sort-dropdown/face";
+    private const string FULLSCREENPANEL = "MainCanvas/FullScreenPanel/";
+    private const string LEADERBOARD_PATH = $"{FULLSCREENPANEL}Leaderboard";
+    private const string SORT_DROPDROPDOWN_PATH = $"{FULLSCREENPANEL}sort-dropdown/face";
+    private const string TITLE_PATH = $"{FULLSCREENPANEL}title";
 
     static void Prefix()
     {
@@ -107,6 +109,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         FilterTracks(__instance, ref ___alltrackslist);
         AddDeleteButtons(__instance, ___alltrackslist);
         InitializeSongGraphs(ref ___songgraphs);
+        AddSearchBar(__instance);
     }
 
     #region AddOptions
@@ -310,7 +313,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         Button deleteButton = AddDeleteButton(scoreText);
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
-        deleteRectTransform.localPosition = new Vector2(-15, 30);
+        deleteRectTransform.localPosition = new Vector2(-25, 30);
         deleteButton.name = $"delete track scores";
         deleteButton.onClick.AddListener(delegate { Delete(__instance, ___alltrackslist); });
         return deleteButton;
@@ -412,6 +415,16 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
                 ___songgraphs[i][j] = Mathf.FloorToInt(UnityEngine.Random.value * 100f);
             }
         }
+    }
+    #endregion
+
+    #region AddSearchBar
+    private static void AddSearchBar(LevelSelectController __instance)
+    {
+/*        var title = GameObject.Find(TITLE_PATH);
+        var input = title.AddComponent<InputField>();
+        input.name = "search";
+        input.textComponent = title.GetComponent<Text>();*/
     }
     #endregion
 }
