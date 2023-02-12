@@ -3,23 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using BepInEx;
 using SimpleJSON;
 using TrombLoader.Data;
 using TrombLoader.Helpers;
 using UnityEngine;
 
-namespace SongOrganizer.Data;
+namespace SongOrganizer.Utils;
 
-public class Utils
+public class Helpers
 {
-    public static string getBestLetterScore(string trackRef, int bestScore)
+    public static string RatedTracksPath = Paths.ConfigPath + "/rated.json";
+
+    public static string GetBestLetterScore(string trackRef, int bestScore)
     {
         if (bestScore == 0) return "-";
-        float num = (float)bestScore / getMaxScore(trackRef);
+        float num = (float)bestScore / GetMaxScore(trackRef);
         return num < 1f ? (num < 0.8f ? (num < 0.6f ? (num < 0.4f ? (num < 0.2f ? "F" : "D") : "C") : "B") : "A") : "S";
     }
 
-    public static int getMaxScore(string trackRef)
+    public static int GetMaxScore(string trackRef)
     {
         string baseTmb = Application.streamingAssetsPath + "/leveldata/" + trackRef + ".tmb";
         List<float[]> levelData = !File.Exists(baseTmb)
@@ -55,5 +58,29 @@ public class Utils
             BinaryFormatter binaryFormatter = new BinaryFormatter();
             return (SavedLevel)binaryFormatter.Deserialize(fileStream);
         }
+    }
+
+    // key: track_ref, value: short_name
+    public static Dictionary<string, string> GetRatedTracks()
+    {
+        var trackrefs = new Dictionary<string, string>();
+        try
+        {
+            using (var streamReader = new StreamReader(RatedTracksPath))
+            {
+                string jsonString = streamReader.ReadToEnd();
+                var jsonObject = JSON.Parse(jsonString);
+                var results = jsonObject.GetValueOrDefault("results", null);
+                foreach (var result in results?.AsArray)
+                {
+                    trackrefs.TryAdd(result.Value["track_ref"], result.Value["short_name"]);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Plugin.Log.LogError($"Error reading rated.json\n{e.Message}");
+        }
+        return trackrefs;
     }
 }

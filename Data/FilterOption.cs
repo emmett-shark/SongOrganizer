@@ -11,5 +11,7 @@ public enum FilterOption
     [Description("Non S rank")]
     NOT_S_RANK,
     [Description("S rank")]
-    S_RANK
+    S_RANK,
+    UNRATED,
+    RATED,
 }

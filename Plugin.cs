@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -40,6 +39,8 @@ public class Plugin : BaseUnityPlugin
             ShowPlayed = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowPlayed), true),
             ShowNotSRank = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowNotSRank), true),
             ShowSRank = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowSRank), true),
+            ShowUnrated = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowUnrated), true),
+            ShowRated = base.Config.Bind(FILTER_SECTION, nameof(Options.ShowRated), true),
             SortMode = base.Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
             LastIndex = base.Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
         };
@@ -52,10 +53,5 @@ public class Plugin : BaseUnityPlugin
             KeyCodes[j + 26] = (KeyCode)i;
         }
         new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
-    }
-
-    public static bool IsCustomTrack(string trackReference)
-    {
-        return !File.Exists(Path.Combine(Application.dataPath, "StreamingAssets", "leveldata", $"{trackReference}.tmb"));
     }
 }

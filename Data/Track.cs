@@ -3,6 +3,7 @@ namespace SongOrganizer.Data;
 public class Track : SingleTrackData
 {
     public bool custom { get; set; }
+    public bool rated { get; set; }
     public string letterScore { get; set; }
     public int[] scores { get; set; }
 
