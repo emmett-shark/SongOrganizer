@@ -339,7 +339,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
         deleteRectTransform.localPosition = new Vector2(-25, 30);
         deleteButton.name = $"delete track scores";
-        deleteButton.onClick.AddListener(delegate { Delete(__instance, ___alltrackslist); });
+        deleteButton.onClick.AddListener(() => Delete(__instance, ___alltrackslist));
         return deleteButton;
     }
 
@@ -348,7 +348,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Button deleteButton = AddDeleteButton(scoreText);
         int index = int.Parse(scoreText.name);
         deleteButton.name = $"delete score {index}";
-        deleteButton.onClick.AddListener(delegate { Delete(__instance, index, ___alltrackslist); });
+        deleteButton.onClick.AddListener(() => Delete(__instance, index, ___alltrackslist));
         return deleteButton;
     }
 
@@ -465,8 +465,30 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Plugin.SearchInput.textComponent = searchText;
         Plugin.SearchInput.name = "search";
         Plugin.SearchInput.onValueChanged.AddListener(val => SearchListener(val, __instance, ref ___alltrackslist));
+        ClearSearchButton(__instance, searchText, ___alltrackslist);
 
         Destroy(__instance.scenetitle);
+    }
+
+    private static Button ClearSearchButton(LevelSelectController __instance, Text scoreText, List<SingleTrackData> ___alltrackslist)
+    {
+        Button deleteButton = AddDeleteButton(scoreText);
+        deleteButton.name = $"clear search";
+        deleteButton.onClick.AddListener(() => {
+            Plugin.SearchInput.text = "";
+            scoreText.text = "";
+            SearchListener("", __instance, ref ___alltrackslist);
+        });
+        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
+
+        deleteRectTransform.sizeDelta = new Vector2(15, 15);
+        deleteRectTransform.anchoredPosition = new Vector2(-25, 0);
+        
+        var deleteText = deleteButton.GetComponentInChildren<Text>();
+        deleteText.text = "X";
+        deleteText.fontSize = 12;
+
+        return deleteButton;
     }
     #endregion
 }
