@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BaboonAPI.Hooks.Tracks;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -215,10 +216,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Plugin.Log.LogDebug($"Add tracks: {Plugin.TrackDict.Count} in dict, {alltrackslist.Count} total");
         var ratedTracks = Helpers.GetRatedTracks();
         var missingRatedTrackNames = new HashSet<string>(ratedTracks.Values);
-        var trackScores = GlobalVariables.localsave.data_trackscores
-            .Where(i => i != null && i[0] != null)
-            .GroupBy(i => i[0])
-            .ToDictionary(i => i.Key, i => i.First());
         if (Plugin.TrackDict.Count == 0)
         { // add tracks to the dict
             foreach (var track in alltrackslist)
@@ -226,7 +223,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
                 Track newTrack = new Track(track);
                 newTrack.custom = Globals.IsCustomTrack(track.trackref);
                 newTrack.rated = ratedTracks.ContainsKey(track.trackref);
-                SetScores(newTrack, track.trackref, trackScores);
+                SetScores(newTrack, track.trackref);
                 Plugin.TrackDict.TryAdd(track.trackref, newTrack);
             }
         }
@@ -234,7 +231,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         { // update the track scores in the dict
             foreach (var track in Plugin.TrackDict.Values)
             {
-                SetScores(track, track.trackref, trackScores);
+                SetScores(track, track.trackref);
             }
         }
         foreach (var track in Plugin.TrackDict.Values)
@@ -245,11 +242,11 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Plugin.Log.LogInfo($"Rated tracks: {ratedTracks.Count} total. {missingRatedTrackNames.Count} missing: [{string.Join(", ", missingRatedTrackNames)}]");
     }
 
-    private static void SetScores(Track newTrack, string trackref, Dictionary<string, string[]> trackScores)
+    private static void SetScores(Track newTrack, string trackref)
     {
-        bool scoreFound = trackScores.TryGetValue(trackref, out string[] trackScore);
-        newTrack.letterScore = scoreFound ? trackScore[1] : "-";
-        newTrack.scores = scoreFound ? trackScore.Skip(2).Select(int.Parse).ToArray() : new int[Plugin.TRACK_SCORE_LENGTH];
+        var scores = TrackLookup.lookupScore(trackref);
+        newTrack.letterScore = scores != null ? scores.Value.highestRank : "-";
+        newTrack.scores = scores != null ? scores.Value.highScores.ToArray() : new int[Plugin.TRACK_SCORE_LENGTH];
     }
     #endregion
 
