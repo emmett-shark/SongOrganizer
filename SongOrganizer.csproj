@@ -35,4 +35,14 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TromboneChampDir)/BepInEx/plugins" />
   </Target>
+
+  <Target Name="ThunderstoreZip" AfterTargets="Build">
+    <Delete Files="$(OutDir)thunderstore" />
+    <Delete Files="$(SolutionDir)$(ProjectName).zip" />
+    <Copy SourceFiles="icon.png" DestinationFolder="$(OutDir)thunderstore" />
+    <Copy SourceFiles="manifest.json" DestinationFolder="$(OutDir)thunderstore" />
+    <Copy SourceFiles="README.md" DestinationFolder="$(OutDir)thunderstore" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(OutDir)thunderstore" />
+    <ZipDirectory DestinationFile="$(SolutionDir)$(ProjectName).zip" SourceDirectory="$(OutDir)thunderstore" />
+  </Target>
 </Project>

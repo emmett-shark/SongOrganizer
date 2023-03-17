@@ -9,6 +9,8 @@ using UnityEngine.UI;
 namespace SongOrganizer;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+[BepInDependency("TrombLoader")]
+[BepInDependency("ch.offbeatwit.baboonapi.plugin")]
 public class Plugin : BaseUnityPlugin
 {
     public static Plugin Instance;
