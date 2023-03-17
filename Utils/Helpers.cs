@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
+using BaboonAPI.Hooks.Tracks;
 using BepInEx;
-using SimpleJSON;
-using TrombLoader.Data;
-using TrombLoader.Helpers;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace SongOrganizer.Utils;
@@ -24,40 +22,8 @@ public class Helpers
 
     public static int GetMaxScore(string trackRef)
     {
-        string baseTmb = Application.streamingAssetsPath + "/leveldata/" + trackRef + ".tmb";
-        List<float[]> levelData = !File.Exists(baseTmb)
-            ? GetCustomLevelData(trackRef)
-            : GetSavedLevel(baseTmb).savedleveldata;
-
-        return levelData.Sum(noteData =>
+        return TrackLookup.lookup(trackRef).LoadChart().savedleveldata.Sum(noteData =>
             (int)Mathf.Floor(Mathf.Floor(noteData[1] * 10f * 100f * 1.3f) * 10f));
-    }
-
-    private static List<float[]> GetCustomLevelData(string trackRef)
-    {
-        if (!Globals.ChartFolders.TryGetValue(trackRef, out string customChartPath))
-        {
-            return new List<float[]>();
-        }
-        using (var streamReader = new StreamReader(customChartPath + "/song.tmb"))
-        {
-            string baseChartName = Application.streamingAssetsPath + "/leveldata/ballgame.tmb";
-            SavedLevel savedLevel = GetSavedLevel(baseChartName);
-            CustomSavedLevel customLevel = new CustomSavedLevel(savedLevel);
-            string jsonString = streamReader.ReadToEnd();
-            var jsonObject = JSON.Parse(jsonString);
-            customLevel.Deserialize(jsonObject);
-            return customLevel.savedleveldata;
-        }
-    }
-
-    private static SavedLevel GetSavedLevel(string baseTmb)
-    {
-        using (FileStream fileStream = File.Open(baseTmb, FileMode.Open))
-        {
-            BinaryFormatter binaryFormatter = new BinaryFormatter();
-            return (SavedLevel)binaryFormatter.Deserialize(fileStream);
-        }
     }
 
     // key: track_ref, value: short_name
@@ -66,15 +32,11 @@ public class Helpers
         var trackrefs = new Dictionary<string, string>();
         try
         {
-            using (var streamReader = new StreamReader(RatedTracksPath))
+            string responseText = File.ReadAllText(RatedTracksPath);
+            var response = JsonConvert.DeserializeObject<SearchResponse>(responseText);
+            foreach (var result in response.results)
             {
-                string jsonString = streamReader.ReadToEnd();
-                var jsonObject = JSON.Parse(jsonString);
-                var results = jsonObject.GetValueOrDefault("results", null);
-                foreach (var result in results?.AsArray)
-                {
-                    trackrefs.TryAdd(result.Value["track_ref"], result.Value["short_name"]);
-                }
+                trackrefs.TryAdd(result.track_ref, result.short_name);
             }
         }
         catch (Exception e)
@@ -82,5 +44,19 @@ public class Helpers
             Plugin.Log.LogError($"Error reading rated.json\n{e.Message}");
         }
         return trackrefs;
+    }
+
+
+    [Serializable]
+    public class SearchResponse
+    {
+        public List<SearchTrackResult> results;
+    }
+
+    [Serializable]
+    public class SearchTrackResult
+    {
+        public string track_ref;
+        public string short_name;
     }
 }

@@ -12,6 +12,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.2.1
+- Trombloader v2 compatibility
+
 v1.2.0
 - Search bar: searches by long name, short name, artist, description
 
