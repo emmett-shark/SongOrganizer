@@ -3,7 +3,9 @@
     "description": "Trombone Champ Searching, Filtering, and Sorting",
     "version_number": "1.2.1",
     "dependencies": [
-      "BepInEx-BepInExPack_TromboneChamp-5.4.21"
+      "BepInEx-BepInExPack_TromboneChamp-5.4.21",
+      "TromboneChamps-BaboonAPI-2.2.1",
+      "TromboneChamps-TrombLoader-2.0.0"
     ],
     "website_url": "https://github.com/emmett-shark/SongOrganizer/"
 }
