@@ -12,6 +12,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.2.2
+- Fix search bar for Trombone Champ 1.10B
+
 v1.2.1
 - Trombloader v2 compatibility
 

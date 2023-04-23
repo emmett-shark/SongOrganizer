@@ -93,7 +93,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private const string FULLSCREENPANEL = "MainCanvas/FullScreenPanel/";
     private const string LEADERBOARD_PATH = $"{FULLSCREENPANEL}Leaderboard";
     private const string SORT_DROPDROPDOWN_PATH = $"{FULLSCREENPANEL}sort-dropdown/face";
-    private const string SCROLL_SPEED_PATH = $"{FULLSCREENPANEL}ScrollSpeedShad/ScrollSpeed";
+    private const string COMPOSER_NAME_PATH = $"{FULLSCREENPANEL}capsules/composername";
     private const string TITLE_BAR = $"{FULLSCREENPANEL}title bar";
 
     static void Prefix()
@@ -220,9 +220,11 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         { // add tracks to the dict
             foreach (var track in alltrackslist)
             {
-                Track newTrack = new Track(track);
-                newTrack.custom = Globals.IsCustomTrack(track.trackref);
-                newTrack.rated = ratedTracks.ContainsKey(track.trackref);
+                Track newTrack = new(track)
+                {
+                    custom = Globals.IsCustomTrack(track.trackref),
+                    rated = ratedTracks.ContainsKey(track.trackref)
+                };
                 SetScores(newTrack, track.trackref);
                 Plugin.TrackDict.TryAdd(track.trackref, newTrack);
             }
@@ -450,13 +452,15 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         titleRectTransform.anchoredPosition = new Vector2(145, -30);
         titleRectTransform.sizeDelta = new Vector2(275, 200);
 
-        var searchBar = Instantiate(GameObject.Find(SCROLL_SPEED_PATH), fullscreenPanel.transform);
+        var searchBar = Instantiate(GameObject.Find(COMPOSER_NAME_PATH), fullscreenPanel.transform);
         var searchRectTransform = searchBar.GetComponent<RectTransform>();
         searchRectTransform.anchoredPosition = new Vector2(-130, 200);
         searchRectTransform.sizeDelta = new Vector2(250, 14);
+        searchRectTransform.rotation = Quaternion.identity;
 
         var searchText = searchBar.transform.GetComponent<Text>();
         searchText.text = Plugin.Options.SearchValue.Value;
+        searchText.alignment = TextAnchor.MiddleLeft;
 
         Plugin.SearchInput = searchBar.AddComponent<InputField>();
         Plugin.SearchInput.textComponent = searchText;
@@ -480,7 +484,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
         deleteRectTransform.sizeDelta = new Vector2(15, 15);
         deleteRectTransform.anchoredPosition = new Vector2(-25, 0);
-        
+
         var deleteText = deleteButton.GetComponentInChildren<Text>();
         deleteText.text = "X";
         deleteText.fontSize = 12;
