@@ -16,9 +16,32 @@ namespace SongOrganizer.Patches;
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.sortTracks))]
 public class LevelSelectControllerSortTracksPatch : MonoBehaviour
 {
-    static void Prefix(string sortcriteria)
+    static bool Prefix(LevelSelectController __instance, string sortcriteria, bool anim)
     {
         Plugin.Options.SortMode.Value = sortcriteria;
+        GlobalVariables.sortmode = sortcriteria;
+        __instance.sortlabel.text = "Sort: " + sortcriteria;
+        if (anim)
+        {
+            __instance.clipPlayer.cancelCrossfades();
+            __instance.doSfx(__instance.sfx_click);
+            __instance.closeSortDropdown();
+            __instance.btnspanel.transform.localScale = new Vector3(1f / 1000f, 1f, 1f);
+            LeanTween.scaleX(__instance.btnspanel, 1f, 0.2f).setEaseOutQuart();
+        }
+        if (sortcriteria == "default")
+            __instance.alltrackslist.Sort((t1, t2) => t1.trackindex.CompareTo(t2.trackindex));
+        else if (sortcriteria == "difficulty")
+            __instance.alltrackslist.Sort((t1, t2) => t1.difficulty.CompareTo(t2.difficulty));
+        else if (sortcriteria == "alpha")
+            __instance.alltrackslist.Sort((t1, t2) => t1.trackname_short == null ? -1 : t1.trackname_short.CompareTo(t2.trackname_short));
+        else if (sortcriteria == "length")
+            __instance.alltrackslist.Sort((t1, t2) => t1.length.CompareTo(t2.length));
+        else if (sortcriteria == "artist")
+            __instance.alltrackslist.Sort((t1, t2) => t1.artist == null ? -1 : t1.artist.CompareTo(t2.artist));
+        __instance.songindex = !anim ? GlobalVariables.levelselect_index : 0;
+        __instance.populateSongNames(true);
+        return false;
     }
 }
 
@@ -93,6 +116,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private const string FULLSCREENPANEL = "MainCanvas/FullScreenPanel/";
     private const string LEADERBOARD_PATH = $"{FULLSCREENPANEL}Leaderboard";
     private const string SORT_DROPDROPDOWN_PATH = $"{FULLSCREENPANEL}sort-dropdown/face";
+    private const string SORT_BUTTON_PATH = $"{SORT_DROPDROPDOWN_PATH}/btn_sort_length";
     private const string COMPOSER_NAME_PATH = $"{FULLSCREENPANEL}capsules/composername";
     private const string TITLE_BAR = $"{FULLSCREENPANEL}title bar";
 
@@ -126,7 +150,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private static void ToggleListener(ConfigEntry<bool> configEntry, bool b, LevelSelectController __instance, ref List<SingleTrackData> ___alltrackslist)
     {
         configEntry.Value = b;
-        FilterTracks(__instance,  ref ___alltrackslist);
+        FilterTracks(__instance, ref ___alltrackslist);
     }
 
     #region AddOptions
@@ -136,16 +160,17 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         GameObject face = GameObject.Find(SORT_DROPDROPDOWN_PATH);
         RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
         RectTransform faceRectTransform = face.GetComponent<RectTransform>();
-        int length = 250, y = -95;
+        int length = 250, y = -125;
         faceRectTransform.sizeDelta = new Vector2(180, length);
         sortDropRectTransform.sizeDelta = new Vector2(180, length);
+        CreateSortOption(__instance, face, "artist");
         foreach (FilterOption filterOption in Enum.GetValues(typeof(FilterOption)))
         {
-            Toggle toggle = CreateToggle(face, filterOption, new Vector2(0, y -= 30));
+            Toggle filter = CreateFilterOption(face, filterOption, new Vector2(0, y -= 30));
             ConfigEntry<bool> configEntry = GetConfigEntry(filterOption);
             if (configEntry == null) continue;
-            toggle.isOn = configEntry.Value;
-            toggle.onValueChanged.AddListener(b => ToggleListener(configEntry, b, __instance, ref ___alltrackslist));
+            filter.isOn = configEntry.Value;
+            filter.onValueChanged.AddListener(b => ToggleListener(configEntry, b, __instance, ref ___alltrackslist));
         }
         foreach (var button in face.GetComponentsInChildren<Button>())
         {
@@ -156,7 +181,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
     private static ConfigEntry<bool> GetConfigEntry(FilterOption filterOption)
     {
-        switch(filterOption)
+        switch (filterOption)
         {
             case FilterOption.DEFAULT:
                 return Plugin.Options.ShowDefault;
@@ -178,7 +203,22 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         return null;
     }
 
-    private static Toggle CreateToggle(GameObject face, FilterOption filter, Vector2 position)
+    private static void CreateSortOption(LevelSelectController __instance, GameObject face, string sortOption)
+    {
+        GameObject sortObject = GameObject.Find(SORT_BUTTON_PATH);
+        var sort = Instantiate(sortObject.GetComponent<Button>(), face.transform.transform);
+        sort.name = sortOption;
+        var rectTransform = sort.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = new Vector2(0, -75);
+
+        Text text = sort.GetComponentInChildren<Text>();
+        text.text = sortOption;
+        Button sortButton = sort.GetComponent<Button>();
+        sortButton.onClick.RemoveAllListeners();
+        sortButton.onClick.AddListener(() => __instance.sortTracks(sortOption, true));
+    }
+
+    private static Toggle CreateFilterOption(GameObject face, FilterOption filter, Vector2 position)
     {
         Toggle toggle = Instantiate(Plugin.Toggle, face.transform.transform);
         string name = Enums.GetDescription(filter);
