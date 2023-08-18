@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using BaboonAPI.Hooks.Tracks;
-using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
-using TrombLoader.Helpers;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,11 +32,13 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
         else if (sortcriteria == "difficulty")
             __instance.alltrackslist.Sort((t1, t2) => t1.difficulty.CompareTo(t2.difficulty));
         else if (sortcriteria == "alpha")
-            __instance.alltrackslist.Sort((t1, t2) => t1.trackname_short == null ? -1 : t1.trackname_short.CompareTo(t2.trackname_short));
+            __instance.alltrackslist.Sort((t1, t2) => t1.trackname_short == null ? -1 : t1.trackname_short.Trim().CompareTo(t2.trackname_short.Trim()));
+        else if (sortcriteria == "long name")
+            __instance.alltrackslist.Sort((t1, t2) => t1.trackname_long == null ? -1 : t1.trackname_long.Trim().CompareTo(t2.trackname_long.Trim()));
         else if (sortcriteria == "length")
             __instance.alltrackslist.Sort((t1, t2) => t1.length.CompareTo(t2.length));
         else if (sortcriteria == "artist")
-            __instance.alltrackslist.Sort((t1, t2) => t1.artist == null ? -1 : t1.artist.CompareTo(t2.artist));
+            __instance.alltrackslist.Sort((t1, t2) => t1.artist == null ? -1 : t1.artist.Trim().CompareTo(t2.artist.Trim()));
         __instance.songindex = !anim ? GlobalVariables.levelselect_index : 0;
         __instance.populateSongNames(true);
         return false;
@@ -83,30 +83,39 @@ public class LevelSelectControllerDoneRandomizingPatch : MonoBehaviour
 }
 
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.searchForSongName))]
+public class LevelSelectControllerSearchFirstLetterPatch : MonoBehaviour
+{
+    static bool Prefix(string startingletter) => false;
+}
+
+[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Update))]
 public class LevelSelectControllerUpdatePatch : MonoBehaviour
 {
-    static bool Prefix(string startingletter, LevelSelectController __instance, ref int ___songindex, ref List<SingleTrackData> ___alltrackslist)
+    static void Postfix(LevelSelectController __instance, ref int ___songindex, ref List<SingleTrackData> ___alltrackslist)
     {
-        if (Plugin.SearchInput.isFocused) return false;
-        char key = startingletter.ToLower()[0];
-        int increment = 1;
-        for (int i = ___songindex + 1; i < ___alltrackslist.Count; i++, increment++)
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.F))
         {
-            if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
+            Plugin.SearchInput.Select();
+        }
+        else if (!Plugin.SearchInput.isFocused && Input.anyKeyDown && Input.inputString.Length > 0)
+        {
+            char key = Input.inputString.ToLower()[0];
+            int increment = 1;
+            for (int i = ___songindex + 1; i < ___alltrackslist.Count; i++, increment++)
             {
-                __instance.advanceSongs(increment, true);
-                return false;
+                if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
+                {
+                    __instance.advanceSongs(increment, true);
+                }
+            }
+            for (int i = 0; i < ___songindex; i++, increment++)
+            {
+                if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
+                {
+                    __instance.advanceSongs(increment, true);
+                }
             }
         }
-        for (int i = 0; i < ___songindex; i++, increment++)
-        {
-            if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
-            {
-                __instance.advanceSongs(increment, true);
-                return false;
-            }
-        }
-        return false;
     }
 }
 
@@ -130,53 +139,51 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         }
     }
 
-    static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist, ref int[][] ___songgraphs)
+    static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
     {
-        AddOptions(__instance, ___alltrackslist);
-        AddTracks(___alltrackslist);
-        AddSearchBar(__instance, ___alltrackslist);
-        FilterTracks(__instance, ref ___alltrackslist);
+        var ratedTracks = TootTally.ReadRatedTracks();
+        TracksLoadedEvent.EVENT.Register(new TrackLoaded(__instance, ratedTracks));
+
+        AddOptions(__instance);
+        TrackLoaded.AddTracks(ratedTracks, __instance);
+        AddSearchBar(__instance);
+        TrackLoaded.FilterTracks(__instance);
         AddDeleteButtons(__instance, ___alltrackslist);
-        InitializeSongGraphs(ref ___songgraphs);
-    }
-
-    private static void SearchListener(string val, LevelSelectController __instance, ref List<SingleTrackData> ___alltrackslist)
-    {
-        Plugin.Log.LogDebug($"search: {val}");
-        Plugin.Options.SearchValue.Value = val;
-        FilterTracks(__instance, ref ___alltrackslist);
-    }
-
-    private static void ToggleListener(ConfigEntry<bool> configEntry, bool b, LevelSelectController __instance, ref List<SingleTrackData> ___alltrackslist)
-    {
-        configEntry.Value = b;
-        FilterTracks(__instance, ref ___alltrackslist);
     }
 
     #region AddOptions
     // idk how these numbers work
-    private static void AddOptions(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
+    private static void AddOptions(LevelSelectController __instance)
     {
         GameObject face = GameObject.Find(SORT_DROPDROPDOWN_PATH);
         RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
         RectTransform faceRectTransform = face.GetComponent<RectTransform>();
-        int length = 250, y = -125;
+        int length = 250;
         faceRectTransform.sizeDelta = new Vector2(180, length);
         sortDropRectTransform.sizeDelta = new Vector2(180, length);
-        CreateSortOption(__instance, face, "artist");
+        CreateSortOption(__instance, face, "artist", -75);
+        CreateSortOption(__instance, face, "long name", -105);
+
+        int filterOffset = -155;
         foreach (FilterOption filterOption in Enum.GetValues(typeof(FilterOption)))
         {
-            Toggle filter = CreateFilterOption(face, filterOption, new Vector2(0, y -= 30));
+            Toggle filter = CreateFilterOption(face, filterOption, new Vector2(0, filterOffset -= 30));
             ConfigEntry<bool> configEntry = GetConfigEntry(filterOption);
             if (configEntry == null) continue;
             filter.isOn = configEntry.Value;
-            filter.onValueChanged.AddListener(b => ToggleListener(configEntry, b, __instance, ref ___alltrackslist));
+            filter.onValueChanged.AddListener(b => ToggleListener(configEntry, b, __instance));
         }
         foreach (var button in face.GetComponentsInChildren<Button>())
         {
             RectTransform t = button.GetComponent<RectTransform>();
             t.anchoredPosition = new Vector2(t.anchoredPosition.x, t.anchoredPosition.y + 60);
         }
+    }
+
+    private static void ToggleListener(ConfigEntry<bool> configEntry, bool b, LevelSelectController __instance)
+    {
+        configEntry.Value = b;
+        TrackLoaded.FilterTracks(__instance);
     }
 
     private static ConfigEntry<bool> GetConfigEntry(FilterOption filterOption)
@@ -203,13 +210,13 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         return null;
     }
 
-    private static void CreateSortOption(LevelSelectController __instance, GameObject face, string sortOption)
+    private static void CreateSortOption(LevelSelectController __instance, GameObject face, string sortOption, float y)
     {
         GameObject sortObject = GameObject.Find(SORT_BUTTON_PATH);
         var sort = Instantiate(sortObject.GetComponent<Button>(), face.transform.transform);
         sort.name = sortOption;
         var rectTransform = sort.GetComponent<RectTransform>();
-        rectTransform.anchoredPosition = new Vector2(0, -75);
+        rectTransform.anchoredPosition = new Vector2(0, y);
 
         Text text = sort.GetComponentInChildren<Text>();
         text.text = sortOption;
@@ -247,111 +254,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             }
         }
         return toggle;
-    }
-    #endregion
-
-    #region AddTracks
-    private static void AddTracks(List<SingleTrackData> alltrackslist)
-    {
-        Plugin.Log.LogDebug($"Add tracks: {Plugin.TrackDict.Count} in dict, {alltrackslist.Count} total");
-        var ratedTracks = Helpers.GetRatedTracks();
-        var missingRatedTrackNames = new HashSet<string>(ratedTracks.Values);
-        if (Plugin.TrackDict.Count == 0)
-        { // add tracks to the dict
-            foreach (var track in alltrackslist)
-            {
-                Track newTrack = new(track)
-                {
-                    custom = Globals.IsCustomTrack(track.trackref),
-                    rated = ratedTracks.ContainsKey(track.trackref)
-                };
-                SetScores(newTrack, track.trackref);
-                Plugin.TrackDict.TryAdd(track.trackref, newTrack);
-            }
-        }
-        else
-        { // update the track scores in the dict
-            foreach (var track in Plugin.TrackDict.Values)
-            {
-                SetScores(track, track.trackref);
-            }
-        }
-        foreach (var track in Plugin.TrackDict.Values)
-        {
-            track.rated = ratedTracks.ContainsKey(track.trackref);
-            missingRatedTrackNames.Remove(track.trackname_short);
-        }
-        Plugin.Log.LogInfo($"Rated tracks: {ratedTracks.Count} total. {missingRatedTrackNames.Count} missing: [{string.Join(", ", missingRatedTrackNames)}]");
-    }
-
-    private static void SetScores(Track newTrack, string trackref)
-    {
-        var scores = TrackLookup.lookupScore(trackref);
-        newTrack.letterScore = scores != null ? scores.Value.highestRank : "-";
-        newTrack.scores = scores != null ? scores.Value.highScores.ToArray() : new int[Plugin.TRACK_SCORE_LENGTH];
-    }
-    #endregion
-
-    #region FilterTracks
-    private static void FilterTracks(LevelSelectController __instance, ref List<SingleTrackData> ___alltrackslist)
-    {
-        List<string[]> newTracktitles = new List<string[]>();
-        List<SingleTrackData> newTrackData = new List<SingleTrackData>();
-        int newTrackIndex = 0;
-        foreach (Track track in Plugin.TrackDict.Values)
-        {
-            if (!ShowTrack(track)) continue;
-            track.trackindex = newTrackIndex;
-            newTracktitles.Add(new string[] {
-                track.trackname_long,
-                track.trackname_short,
-                track.trackref,
-                track.year,
-                track.artist,
-                track.genre,
-                track.desc,
-                track.difficulty.ToString(),
-                track.length.ToString(),
-                track.tempo.ToString()
-            });
-            newTrackData.Add(track);
-            newTrackIndex++;
-        }
-        if (newTracktitles.Count > 0)
-        {
-            GlobalVariables.data_tracktitles = newTracktitles.ToArray();
-            ___alltrackslist.Clear();
-            ___alltrackslist.AddRange(newTrackData);
-        }
-        if (GlobalVariables.levelselect_index >= GlobalVariables.data_tracktitles.Length)
-        {
-            GlobalVariables.levelselect_index = 0;
-        }
-        Plugin.Log.LogDebug($"Filter result: {___alltrackslist.Count} found of {Plugin.TrackDict.Count}");
-
-        __instance.sortTracks(Plugin.Options.SortMode.Value.ToLower(), false);
-    }
-
-    private static bool ShowTrack(Track track)
-    {
-        return ShowTrack(Plugin.Options.ShowCustom.Value, Plugin.Options.ShowDefault.Value, track.custom)
-            && ShowTrack(Plugin.Options.ShowPlayed.Value, Plugin.Options.ShowUnplayed.Value, track.letterScore != "-")
-            && ShowTrack(Plugin.Options.ShowSRank.Value, Plugin.Options.ShowNotSRank.Value, track.letterScore == "S")
-            && ShowTrack(Plugin.Options.ShowRated.Value, Plugin.Options.ShowUnrated.Value, track.rated)
-            && ShowTrack(Plugin.Options.SearchValue.Value, track);
-    }
-
-    private static bool ShowTrack(bool optionToggle, bool oppositeOptionToggle, bool option) =>
-        optionToggle == oppositeOptionToggle ? true : optionToggle == option;
-
-    private static bool ShowTrack(string searchVal, Track track)
-    {
-        if (searchVal.IsNullOrWhiteSpace()) return true;
-        string search = searchVal.ToLower().Trim();
-        return track.trackname_long.ToLower().Contains(search) 
-            || track.trackname_short.ToLower().Contains(search)
-            || track.artist.ToLower().Contains(search)
-            || track.desc.ToLower().Contains(search);
     }
     #endregion
 
@@ -465,24 +367,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     }
     #endregion
 
-    #region InitializeSongGraphs
-    private static void InitializeSongGraphs(ref int[][] ___songgraphs)
-    {
-        int totalTracks = Math.Max(GlobalVariables.data_tracktitles.Length, Plugin.TrackDict.Count);
-        ___songgraphs = new int[totalTracks][];
-        for (int i = 0; i < ___songgraphs.Length; i++)
-        {
-            ___songgraphs[i] = new int[Plugin.TRACK_SCORE_LENGTH];
-            for (int j = 0; j < ___songgraphs[i].Length; j++)
-            {
-                ___songgraphs[i][j] = Mathf.FloorToInt(UnityEngine.Random.value * 100f);
-            }
-        }
-    }
-    #endregion
-
     #region AddSearchBar
-    private static void AddSearchBar(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
+    private static void AddSearchBar(LevelSelectController __instance)
     {
         var fullscreenPanel = GameObject.Find(FULLSCREENPANEL);
 
@@ -505,20 +391,20 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Plugin.SearchInput = searchBar.AddComponent<InputField>();
         Plugin.SearchInput.textComponent = searchText;
         Plugin.SearchInput.name = "search";
-        Plugin.SearchInput.onValueChanged.AddListener(val => SearchListener(val, __instance, ref ___alltrackslist));
-        ClearSearchButton(__instance, searchText, ___alltrackslist);
+        Plugin.SearchInput.onValueChanged.AddListener(val => SearchListener(val, __instance));
+        ClearSearchButton(__instance, searchText);
 
         Destroy(__instance.scenetitle);
     }
 
-    private static Button ClearSearchButton(LevelSelectController __instance, Text scoreText, List<SingleTrackData> ___alltrackslist)
+    private static Button ClearSearchButton(LevelSelectController __instance, Text scoreText)
     {
         Button deleteButton = AddDeleteButton(scoreText);
         deleteButton.name = $"clear search";
         deleteButton.onClick.AddListener(() => {
             Plugin.SearchInput.text = "";
             scoreText.text = "";
-            SearchListener("", __instance, ref ___alltrackslist);
+            SearchListener("", __instance);
         });
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
 
@@ -530,6 +416,13 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         deleteText.fontSize = 12;
 
         return deleteButton;
+    }
+
+    private static void SearchListener(string val, LevelSelectController __instance)
+    {
+        Plugin.Log.LogDebug($"search: {val}");
+        Plugin.Options.SearchValue.Value = val;
+        TrackLoaded.FilterTracks(__instance);
     }
     #endregion
 }

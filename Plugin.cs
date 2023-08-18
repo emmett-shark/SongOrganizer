@@ -3,7 +3,6 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SongOrganizer.Data;
-using UnityEngine;
 using UnityEngine.UI;
 
 namespace SongOrganizer;
@@ -22,8 +21,6 @@ public class Plugin : BaseUnityPlugin
     public static InputField SearchInput;
 
     public static Dictionary<string, Track> TrackDict = new Dictionary<string, Track>();
-    public static KeyCode[] KeyCodes = new KeyCode[36];
-
     public const int TRACK_SCORE_LENGTH = 5;
     public static Button[] DeleteButtons = new Button[TRACK_SCORE_LENGTH + 1];
 
@@ -50,14 +47,7 @@ public class Plugin : BaseUnityPlugin
             LastIndex = base.Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
             SearchValue = base.Config.Bind(SEARCH_SECTION, nameof(Options.SearchValue), ""),
         };
-        for (int i = (int)KeyCode.A, j = 0; i <= (int)KeyCode.Z; i++, j++)
-        {
-            KeyCodes[j] = (KeyCode)i;
-        }
-        for (int i = (int)KeyCode.Alpha0, j = 0; i <= (int)KeyCode.Alpha9; i++, j++)
-        {
-            KeyCodes[j + 26] = (KeyCode)i;
-        }
+        StartCoroutine(TootTally.GetRatedTracks());
         new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
     }
 }

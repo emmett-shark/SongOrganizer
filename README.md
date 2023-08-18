@@ -12,6 +12,13 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.3.0
+- Fix bug with reloading tracks
+- Fix bug where any track with the same trackref as a rated track will be considered a rated track, even when it's not
+- Log the download link of missing rated tracks
+- Add sort by long name
+- Ctrl+F to search
+
 v1.2.3
 - Sort by artist for Trombone Champ 1.11B
 

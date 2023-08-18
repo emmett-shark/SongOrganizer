@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using SongOrganizer.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +16,5 @@ public class HomeControllerStartPatch : MonoBehaviour
         Plugin.Button = Instantiate(__instance.graphicspanel.GetComponentInChildren<Button>());
         Plugin.Button.onClick.RemoveAllListeners();
         DontDestroyOnLoad(Plugin.Button);
-
-        Plugin.Instance.StartCoroutine(TootTallyAPIService.GetRatedTracks());
     }
 }

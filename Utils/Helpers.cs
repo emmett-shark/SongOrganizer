@@ -1,18 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using BaboonAPI.Hooks.Tracks;
-using BepInEx;
-using Newtonsoft.Json;
 using UnityEngine;
 
 namespace SongOrganizer.Utils;
 
 public class Helpers
 {
-    public static string RatedTracksPath = Paths.ConfigPath + "/rated.json";
-
     public static string GetBestLetterScore(string trackRef, int bestScore)
     {
         if (bestScore == 0) return "-";
@@ -26,37 +21,17 @@ public class Helpers
             (int)Mathf.Floor(Mathf.Floor(noteData[1] * 10f * 100f * 1.3f) * 10f));
     }
 
-    // key: track_ref, value: short_name
-    public static Dictionary<string, string> GetRatedTracks()
+    public static string CalcSHA256(string input)
     {
-        var trackrefs = new Dictionary<string, string>();
-        try
+        using (SHA256 sha256 = SHA256.Create())
         {
-            string responseText = File.ReadAllText(RatedTracksPath);
-            var response = JsonConvert.DeserializeObject<SearchResponse>(responseText);
-            foreach (var result in response.results)
+            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
             {
-                trackrefs.TryAdd(result.track_ref, result.short_name);
+                builder.Append(bytes[i].ToString("x2"));
             }
+            return builder.ToString();
         }
-        catch (Exception e)
-        {
-            Plugin.Log.LogError($"Error reading rated.json\n{e.Message}");
-        }
-        return trackrefs;
-    }
-
-
-    [Serializable]
-    public class SearchResponse
-    {
-        public List<SearchTrackResult> results;
-    }
-
-    [Serializable]
-    public class SearchTrackResult
-    {
-        public string track_ref;
-        public string short_name;
     }
 }
