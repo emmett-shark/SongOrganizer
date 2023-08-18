@@ -17,10 +17,6 @@
     <PackageReference Include="UnityEngine.Modules" Version="2019.3.11" IncludeAssets="compile" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Compatibility\" />
-  </ItemGroup>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TromboneChampDir)/BepInEx/plugins" />
   </Target>

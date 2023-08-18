@@ -48,9 +48,13 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.updateGraph))]
 public class LevelSelectControllerUpdateGraphPatch : MonoBehaviour
 {
-    static void Prefix(ref int ___lastindex, ref int[][] ___songgraphs)
+    static bool Prefix(LevelSelectController __instance)
     {
-        ___lastindex = ___lastindex >= ___songgraphs.Length ? 0 : ___lastindex;
+        for (int i = 0; i < 5; i++)
+        {
+            __instance.graphline.SetPosition(i, __instance.getGraphVector(i, Mathf.FloorToInt(UnityEngine.Random.value * 100f)));
+        }
+        return false;
     }
 }
 
@@ -103,16 +107,18 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
             int increment = 1;
             for (int i = ___songindex + 1; i < ___alltrackslist.Count; i++, increment++)
             {
-                if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
+                if (___alltrackslist[i].trackname_short.ToLower().Trim()[0] == key)
                 {
                     __instance.advanceSongs(increment, true);
+                    return;
                 }
             }
             for (int i = 0; i < ___songindex; i++, increment++)
             {
-                if (___alltrackslist[i].trackname_short.ToLower()[0] == key)
+                if (___alltrackslist[i].trackname_short.ToLower().Trim()[0] == key)
                 {
                     __instance.advanceSongs(increment, true);
+                    return;
                 }
             }
         }
@@ -142,14 +148,28 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
     {
         var ratedTracks = TootTally.ReadRatedTracks();
-        TracksLoadedEvent.EVENT.Register(new TrackLoaded(__instance, ratedTracks));
+        var tracksLoaded = new TrackLoaded(__instance, ratedTracks);
+        TracksLoadedEvent.EVENT.Register(tracksLoaded);
+        tracksLoaded.OnTracksLoaded(null);
+
+        GameObject leaderboard = GameObject.Find(LEADERBOARD_PATH);
 
         AddOptions(__instance);
-        TrackLoaded.AddTracks(ratedTracks, __instance);
         AddSearchBar(__instance);
-        TrackLoaded.FilterTracks(__instance);
-        AddDeleteButtons(__instance, ___alltrackslist);
+        AddDeleteButtons(__instance, ___alltrackslist, leaderboard);
+        AddStars(__instance, leaderboard);
     }
+
+    #region AddStars
+    private static void AddStars(LevelSelectController __instance, GameObject leaderboard)
+    {
+        var oldStar = leaderboard.GetComponentsInChildren<Image>()?.Where(i => i.name == "#1 star").FirstOrDefault();
+        GameObject face = GameObject.Find(SORT_DROPDROPDOWN_PATH);
+        RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
+        //var star = Instantiate(oldStar, sortDropRectTransform);
+        Destroy(oldStar);
+    }
+    #endregion
 
     #region AddOptions
     // idk how these numbers work
@@ -258,11 +278,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     #endregion
 
     #region AddDeleteButtons
-    private static void AddDeleteButtons(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
+    private static void AddDeleteButtons(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist, GameObject leaderboard)
     {
-        GameObject leaderboard = GameObject.Find(LEADERBOARD_PATH);
-        Destroy(leaderboard.GetComponentsInChildren<Image>()?.Where(i => i.name == "#1 star").FirstOrDefault());
-
         var nums = Enumerable.Range(1, Plugin.TRACK_SCORE_LENGTH).Select(i => i.ToString());
         Text[] leaderboardText = leaderboard.GetComponentsInChildren<Text>();
         Text[] scoreNums = leaderboardText.Where(x => nums.Contains(x.name))

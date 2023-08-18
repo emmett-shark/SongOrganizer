@@ -12,7 +12,7 @@ public class HomeControllerStartPatch : MonoBehaviour
     {
         Plugin.Toggle = Instantiate(__instance.set_tog_accessb_jumpscare);
         DontDestroyOnLoad(Plugin.Toggle);
-        
+
         Plugin.Button = Instantiate(__instance.graphicspanel.GetComponentInChildren<Button>());
         Plugin.Button.onClick.RemoveAllListeners();
         DontDestroyOnLoad(Plugin.Button);

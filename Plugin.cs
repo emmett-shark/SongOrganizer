@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SongOrganizer.Data;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace SongOrganizer;
@@ -19,6 +20,7 @@ public class Plugin : BaseUnityPlugin
     public static Toggle Toggle;
     public static Button Button;
     public static InputField SearchInput;
+    public static Image Star;
 
     public static Dictionary<string, Track> TrackDict = new Dictionary<string, Track>();
     public const int TRACK_SCORE_LENGTH = 5;

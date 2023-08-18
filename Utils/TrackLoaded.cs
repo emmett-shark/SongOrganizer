@@ -32,13 +32,13 @@ public class TrackLoaded : TracksLoadedEvent.Listener
     {
         var start = DateTime.Now;
         Plugin.Log.LogDebug($"Loading tracks: {__instance.alltrackslist.Count} total");
-        var ratedTrackHashes = ratedTracks.Where(i => !i.is_official && i.download != null).ToDictionary(i => i.file_hash);
+        var ratedTrackFileHashes = ratedTracks.Where(i => !i.is_official && i.download != null).ToDictionary(i => i.file_hash);
         var ratedTrackRefs = new HashSet<string>(ratedTracks.Select(i => i.track_ref));
-        var foundRatedTrackHashes = new HashSet<string>();
+        var foundRatedTrackNoteHashes = new HashSet<string>();
         Plugin.TrackDict.Clear();
         foreach (var track in __instance.alltrackslist)
         {
-            bool custom = false, rated = false;
+            bool custom = false, rated = true;
             if (Globals.IsCustomTrack(track.trackref))
             {
                 if (ratedTrackRefs.Contains(track.trackref))
@@ -47,8 +47,8 @@ public class TrackLoaded : TracksLoadedEvent.Listener
                     var chartPath = Path.Combine(customTrack.folderPath, Globals.defaultChartName);
                     var file = File.ReadAllText(chartPath);
                     var fileHash = Helpers.CalcSHA256(file);
-                    rated = ratedTrackHashes.ContainsKey(fileHash);
-                    if (rated) foundRatedTrackHashes.Add(fileHash);
+                    rated = ratedTrackFileHashes.ContainsKey(fileHash);
+                    if (rated) foundRatedTrackNoteHashes.Add(ratedTrackFileHashes[fileHash].note_hash);
                 }
                 custom = true;
             }
@@ -63,11 +63,9 @@ public class TrackLoaded : TracksLoadedEvent.Listener
             Plugin.TrackDict.TryAdd(track.trackref, newTrack);
         }
         var missingRatedTracks = new Dictionary<string, TootTally.SearchTrackResult>();
-        foreach (var ratedTrackHashGrouping in ratedTrackHashes)
+        foreach (var track in ratedTracks)
         {
-            string fileHash = ratedTrackHashGrouping.Key;
-            var track = ratedTrackHashes[fileHash];
-            if (!foundRatedTrackHashes.Contains(fileHash))
+            if (!foundRatedTrackNoteHashes.Contains(track.note_hash) && track.download != null)
             {
                 missingRatedTracks.TryAdd(track.download, track);
             }
