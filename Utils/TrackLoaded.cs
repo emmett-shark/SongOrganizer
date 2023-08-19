@@ -50,6 +50,10 @@ public class TrackLoaded : TracksLoadedEvent.Listener
                     rated = ratedTrackFileHashes.ContainsKey(fileHash);
                     if (rated) foundRatedTrackNoteHashes.Add(ratedTrackFileHashes[fileHash].note_hash);
                 }
+                else
+                {
+                    rated = false;
+                }
                 custom = true;
             }
             Track newTrack = new(track)
