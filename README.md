@@ -12,7 +12,7 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
-v1.3.0
+v1.3.1
 - Fix bug with reloading tracks
 - Fix bug where any track with the same trackref as a rated track will be considered a rated track, even when it's not
 - Log the download link of missing rated tracks
