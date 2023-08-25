@@ -56,7 +56,7 @@ public class Plugin : BaseUnityPlugin
         new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
     }
 
-    public void UnloadModule()
+    public static void UnloadModule()
     {
         if (TrackLoaded != null)
         {

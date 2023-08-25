@@ -125,18 +125,16 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
     }
 }
 
-
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.clickBack))]
 public class LevelSelectControllerBackPatch : MonoBehaviour
 {
-    static void Postfix()
-    {
-        if (Plugin.TrackLoaded != null)
-        {
-            TracksLoadedEvent.EVENT.Unregister(Plugin.TrackLoaded);
-            Plugin.TrackLoaded = null;
-        }
-    }
+    static void Postfix() => Plugin.UnloadModule();
+}
+
+[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.clickPlay))]
+public class LevelSelectControllerPlayPatch : MonoBehaviour
+{
+    static void Postfix() => Plugin.UnloadModule();
 }
 
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Start))]
