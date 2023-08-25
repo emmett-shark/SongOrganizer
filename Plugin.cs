@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using BaboonAPI.Hooks.Tracks;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SongOrganizer.Data;
+using SongOrganizer.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +18,7 @@ public class Plugin : BaseUnityPlugin
     public static Plugin Instance;
     public static ManualLogSource Log;
     public static Options Options;
+    public static TrackLoaded TrackLoaded;
 
     public static Toggle Toggle;
     public static Button Button;
@@ -51,5 +54,14 @@ public class Plugin : BaseUnityPlugin
         };
         StartCoroutine(TootTally.GetRatedTracks());
         new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+    }
+
+    public void UnloadModule()
+    {
+        if (TrackLoaded != null)
+        {
+            TracksLoadedEvent.EVENT.Unregister(TrackLoaded);
+            TrackLoaded = null;
+        }
     }
 }

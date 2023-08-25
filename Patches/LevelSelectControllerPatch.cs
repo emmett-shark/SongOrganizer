@@ -125,6 +125,20 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
     }
 }
 
+
+[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.clickBack))]
+public class LevelSelectControllerBackPatch : MonoBehaviour
+{
+    static void Postfix()
+    {
+        if (Plugin.TrackLoaded != null)
+        {
+            TracksLoadedEvent.EVENT.Unregister(Plugin.TrackLoaded);
+            Plugin.TrackLoaded = null;
+        }
+    }
+}
+
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Start))]
 public class LevelSelectControllerStartPatch : MonoBehaviour
 {
@@ -148,9 +162,12 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
     {
         var ratedTracks = TootTally.ReadRatedTracks();
-        var tracksLoaded = new TrackLoaded(__instance, ratedTracks);
-        TracksLoadedEvent.EVENT.Register(tracksLoaded);
-        tracksLoaded.OnTracksLoaded(null);
+        if (Plugin.TrackLoaded == null)
+        {
+            Plugin.TrackLoaded = new TrackLoaded(__instance, ratedTracks);
+            TracksLoadedEvent.EVENT.Register(Plugin.TrackLoaded);
+            Plugin.TrackLoaded.OnTracksLoaded(null);
+        }
 
         GameObject leaderboard = GameObject.Find(LEADERBOARD_PATH);
 
