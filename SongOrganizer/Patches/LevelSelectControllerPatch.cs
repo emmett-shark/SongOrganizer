@@ -134,6 +134,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private const string SORT_BUTTON_PATH = $"{SORT_DROPDROPDOWN_PATH}/btn_sort_length";
     private const string COMPOSER_NAME_PATH = $"{FULLSCREENPANEL}capsules/composername";
     private const string TITLE_BAR = $"{FULLSCREENPANEL}title bar";
+    private const string POINTER = $"{FULLSCREENPANEL}Pointer";
+    private static TrackLoaded tracksLoaded;
 
     static void Prefix()
     {
@@ -148,7 +150,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
     {
         var ratedTracks = TootTally.ReadRatedTracks();
-        var tracksLoaded = new TrackLoaded(__instance, ratedTracks);
+        tracksLoaded = new TrackLoaded(__instance, ratedTracks);
         TracksLoadedEvent.EVENT.Register(tracksLoaded);
         tracksLoaded.OnTracksLoaded(null);
 
@@ -164,9 +166,18 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private static void AddStars(LevelSelectController __instance, GameObject leaderboard)
     {
         var oldStar = leaderboard.GetComponentsInChildren<Image>()?.Where(i => i.name == "#1 star").FirstOrDefault();
-        GameObject face = GameObject.Find(SORT_DROPDROPDOWN_PATH);
-        RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
-        //var star = Instantiate(oldStar, sortDropRectTransform);
+        /*foreach (var btn in __instance.btns)
+        {
+            var buttonPanelRectTransform = btn.gameObject.GetComponent<RectTransform>();
+            var star = Instantiate(oldStar, buttonPanelRectTransform);
+            star.gameObject.SetActive(true);
+            star.name = "favorite";
+            star.color = Color.white;
+
+            var rectTransform = star.GetComponent<RectTransform>();
+            rectTransform.sizeDelta = new Vector2(50, 50);
+            rectTransform.anchoredPosition = new Vector2(-35, -32);
+        }*/
         Destroy(oldStar);
     }
     #endregion
@@ -203,7 +214,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private static void ToggleListener(ConfigEntry<bool> configEntry, bool b, LevelSelectController __instance)
     {
         configEntry.Value = b;
-        TrackLoaded.FilterTracks(__instance);
+        tracksLoaded.FilterTracks(__instance.alltrackslist);
+        __instance.sortTracks(Plugin.Options.SortMode.Value.ToLower(), false);
     }
 
     private static ConfigEntry<bool> GetConfigEntry(FilterOption filterOption)
@@ -439,7 +451,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         Plugin.Log.LogDebug($"search: {val}");
         Plugin.Options.SearchValue.Value = val;
-        TrackLoaded.FilterTracks(__instance);
+        tracksLoaded.FilterTracks(__instance.alltrackslist);
+        __instance.sortTracks(Plugin.Options.SortMode.Value.ToLower(), false);
     }
     #endregion
 }

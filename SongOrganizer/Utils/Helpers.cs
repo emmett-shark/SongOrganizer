@@ -1,7 +1,10 @@
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using BaboonAPI.Hooks.Tracks;
+using TrombLoader.CustomTracks;
+using TrombLoader.Helpers;
 using UnityEngine;
 
 namespace SongOrganizer.Utils;
@@ -21,11 +24,14 @@ public class Helpers
             (int)Mathf.Floor(Mathf.Floor(noteData[1] * 10f * 100f * 1.3f) * 10f));
     }
 
-    public static string CalcSHA256(string input)
+    public static string CalcSHA256(string trackref)
     {
+        var customTrack = TrackLookup.lookup(trackref) as CustomTrack;
+        var chartPath = Path.Combine(customTrack.folderPath, Globals.defaultChartName);
+        var file = File.ReadAllText(chartPath);
         using (SHA256 sha256 = SHA256.Create())
         {
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(file));
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < bytes.Length; i++)
             {
