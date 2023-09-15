@@ -32,16 +32,16 @@ public class TrackLoaded : TracksLoadedEvent.Listener
     {
         var start = DateTime.Now;
         Plugin.Log.LogDebug($"Loading tracks: {__instance.alltrackslist.Count} total");
-        var ratedTrackFileHashes = ratedTracks.Where(i => !i.is_official && i.download != null).ToDictionary(i => i.file_hash);
+        var ratedTrackFileHashes = ratedTracks.Where(i => i.download != null).ToDictionary(i => i.file_hash);
         var ratedTrackRefs = new HashSet<string>(ratedTracks.Select(i => i.track_ref));
         var foundRatedTrackNoteHashes = new HashSet<string>();
         Plugin.TrackDict.Clear();
         foreach (var track in __instance.alltrackslist)
         {
-            bool custom = false, rated = true;
-            if (Globals.IsCustomTrack(track.trackref))
+            bool rated = false;
+            if (ratedTrackRefs.Contains(track.trackref))
             {
-                if (ratedTrackRefs.Contains(track.trackref))
+                if (Globals.IsCustomTrack(track.trackref))
                 {
                     var customTrack = TrackLookup.lookup(track.trackref) as CustomTrack;
                     var chartPath = Path.Combine(customTrack.folderPath, Globals.defaultChartName);
@@ -52,13 +52,12 @@ public class TrackLoaded : TracksLoadedEvent.Listener
                 }
                 else
                 {
-                    rated = false;
+                    rated = true;
                 }
-                custom = true;
             }
             Track newTrack = new(track)
             {
-                custom = custom,
+                custom = Globals.IsCustomTrack(track.trackref),
                 rated = rated
             };
             var scores = TrackLookup.lookupScore(track.trackref);

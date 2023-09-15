@@ -12,6 +12,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.3.4
+- Fix bug with unrated base game tracks
+
 v1.3.3
 - Fix bug with reading rated tracks from toottally
 
