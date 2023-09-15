@@ -12,6 +12,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.3.3
+- Fix bug with reading rated tracks from toottally
+
 v1.3.2
 - Fix bug with reloading tracks when leaving song select
 
