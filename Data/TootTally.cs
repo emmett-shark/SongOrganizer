@@ -29,7 +29,7 @@ public class TootTally
         public string file_hash;
         public decimal difficulty;
         public string author;
-        public string download;
+        public string mirror;
         public bool is_official;
     }
 

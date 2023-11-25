@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using BaboonAPI.Hooks.Tracks;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -68,24 +67,6 @@ public class LevelSelectControllerPopulateSongNamesPatch : MonoBehaviour
     }
 }
 
-[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.clickRandomTrack))]
-public class LevelSelectControllerClickRandomTrackPatch : MonoBehaviour
-{
-    static void Prefix()
-    {
-        Array.ForEach(Plugin.DeleteButtons, i => i.interactable = false);
-    }
-}
-
-[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.doneRandomizing))]
-public class LevelSelectControllerDoneRandomizingPatch : MonoBehaviour
-{
-    static void Postfix()
-    {
-        Array.ForEach(Plugin.DeleteButtons, i => i.interactable = true);
-    }
-}
-
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.searchForSongName))]
 public class LevelSelectControllerSearchFirstLetterPatch : MonoBehaviour
 {
@@ -140,12 +121,13 @@ public class LevelSelectControllerPlayPatch : MonoBehaviour
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Start))]
 public class LevelSelectControllerStartPatch : MonoBehaviour
 {
-    private const string FULLSCREENPANEL = "MainCanvas/FullScreenPanel/";
-    private const string LEADERBOARD_PATH = $"{FULLSCREENPANEL}Leaderboard";
-    private const string SORT_DROPDROPDOWN_PATH = $"{FULLSCREENPANEL}sort-dropdown/face";
-    private const string SORT_BUTTON_PATH = $"{SORT_DROPDROPDOWN_PATH}/btn_sort_length";
-    private const string COMPOSER_NAME_PATH = $"{FULLSCREENPANEL}capsules/composername";
-    private const string TITLE_BAR = $"{FULLSCREENPANEL}title bar";
+    private const string FULLSCREENPANEL = "MainCanvas/FullScreenPanel";
+    private const string LEADERBOARD_PATH = $"{FULLSCREENPANEL}/Leaderboard";
+    private const string SORT_DROPDOWN_PATH = $"{FULLSCREENPANEL}/sort-dropdown";
+    private const string SORT_DROPDROPDOWN_FACE_PATH = $"{SORT_DROPDOWN_PATH}/face";
+    private const string SORT_BUTTON_PATH = $"{SORT_DROPDROPDOWN_FACE_PATH}/btn_sort_length";
+    private const string COMPOSER_NAME_PATH = $"{FULLSCREENPANEL}/capsules/composername";
+    private const string TITLE_BAR = $"{FULLSCREENPANEL}/title bar";
 
     static void Prefix()
     {
@@ -157,7 +139,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         }
     }
 
-    static void Postfix(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
+    static void Postfix(LevelSelectController __instance)
     {
         var ratedTracks = TootTally.ReadRatedTracks();
         if (Plugin.TrackLoaded == null)
@@ -167,30 +149,17 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             Plugin.TrackLoaded.OnTracksLoaded(null);
         }
 
-        GameObject leaderboard = GameObject.Find(LEADERBOARD_PATH);
-
         AddOptions(__instance);
         AddSearchBar(__instance);
-        AddDeleteButtons(__instance, ___alltrackslist, leaderboard);
-        AddStars(__instance, leaderboard);
     }
-
-    #region AddStars
-    private static void AddStars(LevelSelectController __instance, GameObject leaderboard)
-    {
-        var oldStar = leaderboard.GetComponentsInChildren<Image>()?.Where(i => i.name == "#1 star").FirstOrDefault();
-        GameObject face = GameObject.Find(SORT_DROPDROPDOWN_PATH);
-        RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
-        //var star = Instantiate(oldStar, sortDropRectTransform);
-        Destroy(oldStar);
-    }
-    #endregion
 
     #region AddOptions
     // idk how these numbers work
     private static void AddOptions(LevelSelectController __instance)
     {
-        GameObject face = GameObject.Find(SORT_DROPDROPDOWN_PATH);
+        GameObject sortDropdown = GameObject.Find(SORT_DROPDOWN_PATH);
+        sortDropdown.transform.SetAsLastSibling();
+        GameObject face = GameObject.Find(SORT_DROPDROPDOWN_FACE_PATH);
         RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
         RectTransform faceRectTransform = face.GetComponent<RectTransform>();
         int length = 250;
@@ -221,29 +190,19 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         TrackLoaded.FilterTracks(__instance);
     }
 
-    private static ConfigEntry<bool> GetConfigEntry(FilterOption filterOption)
-    {
-        switch (filterOption)
+    private static ConfigEntry<bool> GetConfigEntry(FilterOption filterOption) =>
+        filterOption switch
         {
-            case FilterOption.DEFAULT:
-                return Plugin.Options.ShowDefault;
-            case FilterOption.CUSTOM:
-                return Plugin.Options.ShowCustom;
-            case FilterOption.PLAYED:
-                return Plugin.Options.ShowPlayed;
-            case FilterOption.UNPLAYED:
-                return Plugin.Options.ShowUnplayed;
-            case FilterOption.NOT_S_RANK:
-                return Plugin.Options.ShowNotSRank;
-            case FilterOption.S_RANK:
-                return Plugin.Options.ShowSRank;
-            case FilterOption.UNRATED:
-                return Plugin.Options.ShowUnrated;
-            case FilterOption.RATED:
-                return Plugin.Options.ShowRated;
-        }
-        return null;
-    }
+            FilterOption.DEFAULT => Plugin.Options.ShowDefault,
+            FilterOption.CUSTOM => Plugin.Options.ShowCustom,
+            FilterOption.PLAYED => Plugin.Options.ShowPlayed,
+            FilterOption.UNPLAYED => Plugin.Options.ShowUnplayed,
+            FilterOption.NOT_S_RANK => Plugin.Options.ShowNotSRank,
+            FilterOption.S_RANK => Plugin.Options.ShowSRank,
+            FilterOption.UNRATED => Plugin.Options.ShowUnrated,
+            FilterOption.RATED => Plugin.Options.ShowRated,
+            _ => null,
+        };
 
     private static void CreateSortOption(LevelSelectController __instance, GameObject face, string sortOption, float y)
     {
@@ -289,113 +248,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             }
         }
         return toggle;
-    }
-    #endregion
-
-    #region AddDeleteButtons
-    private static void AddDeleteButtons(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist, GameObject leaderboard)
-    {
-        var nums = Enumerable.Range(1, Plugin.TRACK_SCORE_LENGTH).Select(i => i.ToString());
-        Text[] leaderboardText = leaderboard.GetComponentsInChildren<Text>();
-        Text[] scoreNums = leaderboardText.Where(x => nums.Contains(x.name))
-            .OrderBy(x => x.name).ToArray();
-        for (int i = 1; i <= Plugin.TRACK_SCORE_LENGTH; i++)
-        {
-            Plugin.DeleteButtons[i] = DeleteSingleScoreButton(__instance, scoreNums[i - 1], ___alltrackslist);
-        }
-        Plugin.DeleteButtons[0] = DeleteTrackScoresButton(__instance, scoreNums[0], ___alltrackslist);
-    }
-
-    private static Button DeleteTrackScoresButton(LevelSelectController __instance, Text scoreText, List<SingleTrackData> ___alltrackslist)
-    {
-        Button deleteButton = AddDeleteButton(scoreText);
-        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
-        deleteRectTransform.localPosition = new Vector2(-25, 30);
-        deleteButton.name = $"delete track scores";
-        deleteButton.onClick.AddListener(() => Delete(__instance, ___alltrackslist));
-        return deleteButton;
-    }
-
-    private static Button DeleteSingleScoreButton(LevelSelectController __instance, Text scoreText, List<SingleTrackData> ___alltrackslist)
-    {
-        Button deleteButton = AddDeleteButton(scoreText);
-        int index = int.Parse(scoreText.name);
-        deleteButton.name = $"delete score {index}";
-        deleteButton.onClick.AddListener(() => Delete(__instance, index, ___alltrackslist));
-        return deleteButton;
-    }
-
-    private static Button AddDeleteButton(Text scoreText)
-    {
-        var scoreRectTransform = scoreText.GetComponent<RectTransform>();
-        var deleteButton = Instantiate(Plugin.Button, scoreRectTransform);
-        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
-        deleteButton.onClick.RemoveAllListeners();
-
-        deleteRectTransform.sizeDelta = new Vector2(18, 18);
-        deleteRectTransform.position = scoreRectTransform.position;
-        deleteRectTransform.anchoredPosition = new Vector2(-25, 5);
-
-        var deleteText = deleteButton.GetComponentInChildren<Text>();
-        deleteText.text = "X";
-        deleteText.fontSize = 15;
-        return deleteButton;
-    }
-
-    static void Delete(LevelSelectController __instance, List<SingleTrackData> ___alltrackslist)
-    {
-        string trackref = ___alltrackslist[GlobalVariables.levelselect_index].trackref;
-        string shortname = ___alltrackslist[GlobalVariables.levelselect_index].trackname_short;
-        Plugin.Log.LogInfo($"Deleting all scores for {shortname}");
-
-        string[] trackscores = GlobalVariables.localsave.data_trackscores
-            .Where(i => i != null && i[0] == trackref).FirstOrDefault();
-        if (trackscores == null || trackscores[1] == "-")
-        {
-            Plugin.Log.LogDebug($"No score to delete for {shortname}");
-            return;
-        }
-        trackscores[1] = "-";
-        for (int i = 2; i < trackscores.Length; i++)
-        {
-            trackscores[i] = "0";
-        }
-
-        SaverLoader.updateSavedGame();
-        __instance.populateSongNames(true);
-    }
-
-    static void Delete(LevelSelectController __instance, int index, List<SingleTrackData> ___alltrackslist)
-    {
-        string trackref = ___alltrackslist[GlobalVariables.levelselect_index].trackref;
-        string shortname = ___alltrackslist[GlobalVariables.levelselect_index].trackname_short;
-        Plugin.Log.LogInfo($"Deleting {shortname} - {index}");
-
-        string[] trackscores = GlobalVariables.localsave.data_trackscores
-            .Where(i => i != null && i[0] == trackref).FirstOrDefault();
-        if (trackscores == null || int.Parse(trackscores[index + 1]) == 0)
-        {
-            Plugin.Log.LogDebug($"No score to delete for {shortname} - {index}");
-            return;
-        }
-
-        var newTrackScores = new List<string>();
-        for (int i = 2; i < trackscores.Length; i++)
-        {
-            if (i != index + 1)
-            {
-                newTrackScores.Add(trackscores[i]);
-            }
-        }
-        newTrackScores.Add("0");
-        for (int i = 2; i < trackscores.Length; i++)
-        {
-            trackscores[i] = newTrackScores[i - 2];
-        }
-        trackscores[1] = Helpers.GetBestLetterScore(trackref, int.Parse(trackscores[2]));
-
-        SaverLoader.updateSavedGame();
-        __instance.populateSongNames(true);
     }
     #endregion
 
@@ -452,9 +304,25 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
     private static void SearchListener(string val, LevelSelectController __instance)
     {
-        Plugin.Log.LogDebug($"search: {val}");
         Plugin.Options.SearchValue.Value = val;
         TrackLoaded.FilterTracks(__instance);
     }
     #endregion
+
+    private static Button AddDeleteButton(Text scoreText)
+    {
+        var scoreRectTransform = scoreText.GetComponent<RectTransform>();
+        var deleteButton = Instantiate(Plugin.Button, scoreRectTransform);
+        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
+        deleteButton.onClick.RemoveAllListeners();
+
+        deleteRectTransform.sizeDelta = new Vector2(18, 18);
+        deleteRectTransform.position = scoreRectTransform.position;
+        deleteRectTransform.anchoredPosition = new Vector2(-25, 5);
+
+        var deleteText = deleteButton.GetComponentInChildren<Text>();
+        deleteText.text = "X";
+        deleteText.fontSize = 15;
+        return deleteButton;
+    }
 }

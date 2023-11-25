@@ -5,7 +5,6 @@ using BepInEx.Logging;
 using HarmonyLib;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
-using UnityEngine;
 using UnityEngine.UI;
 
 namespace SongOrganizer;
@@ -27,7 +26,6 @@ public class Plugin : BaseUnityPlugin
 
     public static Dictionary<string, Track> TrackDict = new Dictionary<string, Track>();
     public const int TRACK_SCORE_LENGTH = 5;
-    public static Button[] DeleteButtons = new Button[TRACK_SCORE_LENGTH + 1];
 
     private const string FILTER_SECTION = "Filter";
     private const string SORT_SECTION = "Sort";

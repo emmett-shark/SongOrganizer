@@ -12,6 +12,11 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.3.5
+- Log mirrors instead of the original download links
+- Remove delete buttons because they don't work
+- Make search dropdown over buttons if no toottally
+
 v1.3.4
 - Fix bug with unrated base game tracks
 

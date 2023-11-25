@@ -32,7 +32,7 @@ public class TrackLoaded : TracksLoadedEvent.Listener
     {
         var start = DateTime.Now;
         Plugin.Log.LogDebug($"Loading tracks: {__instance.alltrackslist.Count} total");
-        var ratedTrackFileHashes = ratedTracks.Where(i => i.download != null).ToDictionary(i => i.file_hash);
+        var ratedTrackFileHashes = ratedTracks.Where(i => i.mirror != null).ToDictionary(i => i.file_hash);
         var ratedTrackRefs = new HashSet<string>(ratedTracks.Select(i => i.track_ref));
         var foundRatedTrackNoteHashes = new HashSet<string>();
         Plugin.TrackDict.Clear();
@@ -68,15 +68,15 @@ public class TrackLoaded : TracksLoadedEvent.Listener
         var missingRatedTracks = new Dictionary<string, TootTally.SearchTrackResult>();
         foreach (var track in ratedTracks)
         {
-            if (!foundRatedTrackNoteHashes.Contains(track.note_hash) && track.download != null)
+            if (!foundRatedTrackNoteHashes.Contains(track.note_hash) && track.mirror != null)
             {
-                missingRatedTracks.TryAdd(track.download, track);
+                missingRatedTracks.TryAdd(track.mirror, track);
             }
         }
         Plugin.Log.LogInfo($"Rated tracks: {ratedTracks.Count} total. {missingRatedTracks.Count} missing");
         foreach (var track in missingRatedTracks.Values.OrderBy(i => i.short_name))
         {
-            Plugin.Log.LogInfo($"{track.short_name} - {track.download}");
+            Plugin.Log.LogDebug($"{track.short_name} - {track.mirror}");
         }
         Plugin.Log.LogDebug($"Elapsed {DateTime.Now - start}");
     }
