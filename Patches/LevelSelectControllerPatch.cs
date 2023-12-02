@@ -162,16 +162,23 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         GameObject face = GameObject.Find(SORT_DROPDROPDOWN_FACE_PATH);
         RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
         RectTransform faceRectTransform = face.GetComponent<RectTransform>();
-        int length = 250;
-        faceRectTransform.sizeDelta = new Vector2(180, length);
-        sortDropRectTransform.sizeDelta = new Vector2(180, length);
         CreateSortOption(__instance, face, "artist", -75);
         CreateSortOption(__instance, face, "long name", -105);
+        int length = 430;
+        faceRectTransform.sizeDelta = new Vector2(180, length);
+        sortDropRectTransform.sizeDelta = new Vector2(180, length);
+        foreach (var filterOption in face.GetComponentsInChildren<Button>())
+        {
+            var filterOptionRect = filterOption.GetComponent<RectTransform>();
+            Plugin.Log.LogDebug(filterOptionRect.rect);
+            Plugin.Log.LogDebug(filterOptionRect.anchoredPosition);
+            filterOptionRect.anchoredPosition = new Vector2(filterOptionRect.anchoredPosition.x, filterOptionRect.anchoredPosition.y + 90);
+        }
 
-        int filterOffset = -155;
+        int filterOffset = -180;
         foreach (FilterOption filterOption in Enum.GetValues(typeof(FilterOption)))
         {
-            Toggle filter = CreateFilterOption(face, filterOption, new Vector2(0, filterOffset -= 30));
+            Toggle filter = CreateFilterOption(face, filterOption, new Vector2(242, filterOffset -= 30));
             ConfigEntry<bool> configEntry = GetConfigEntry(filterOption);
             if (configEntry == null) continue;
             filter.isOn = configEntry.Value;
@@ -243,7 +250,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             }
             else if (image.name == "Checkmark")
             {
-                image.rectTransform.anchoredPosition = new Vector2(-5, 0);
+                image.rectTransform.anchoredPosition = new Vector2(-70, 20);
                 image.rectTransform.sizeDelta = new Vector2(20, 20);
             }
         }
