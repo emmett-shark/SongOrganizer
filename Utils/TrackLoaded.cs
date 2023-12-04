@@ -2,21 +2,24 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using BaboonAPI.Hooks.Tracks;
 using BepInEx;
 using Microsoft.FSharp.Collections;
 using SongOrganizer.Data;
 using TrombLoader.CustomTracks;
 using TrombLoader.Helpers;
+using static SongOrganizer.Data.TootTally;
 
 namespace SongOrganizer.Utils;
 
 public class TrackLoaded : TracksLoadedEvent.Listener
 {
     private LevelSelectController __instance;
-    private List<TootTally.SearchTrackResult> ratedTracks;
+    private IEnumerable<SearchTrackResult> ratedTracks;
 
-    public TrackLoaded(LevelSelectController instance, List<TootTally.SearchTrackResult> ratedTracks)
+    public TrackLoaded(LevelSelectController instance, IEnumerable<SearchTrackResult> ratedTracks)
     {
         __instance = instance;
         this.ratedTracks = ratedTracks;
@@ -28,11 +31,11 @@ public class TrackLoaded : TracksLoadedEvent.Listener
         FilterTracks(__instance);
     }
 
-    public static void AddTracks(List<TootTally.SearchTrackResult> ratedTracks, LevelSelectController __instance)
+    public static void AddTracks(IEnumerable<SearchTrackResult> ratedTracks, LevelSelectController __instance)
     {
         var start = DateTime.Now;
         Plugin.Log.LogDebug($"Loading tracks: {__instance.alltrackslist.Count} total");
-        var ratedTrackFileHashes = ratedTracks.Where(i => i.mirror != null).ToDictionary(i => i.file_hash);
+        var ratedTrackHashes = ratedTracks.ToDictionary(i => i.file_hash);
         var ratedTrackRefs = new HashSet<string>(ratedTracks.Select(i => i.track_ref));
         var foundRatedTrackNoteHashes = new HashSet<string>();
         Plugin.TrackDict.Clear();
@@ -45,10 +48,9 @@ public class TrackLoaded : TracksLoadedEvent.Listener
                 {
                     var customTrack = TrackLookup.lookup(track.trackref) as CustomTrack;
                     var chartPath = Path.Combine(customTrack.folderPath, Globals.defaultChartName);
-                    var file = File.ReadAllText(chartPath);
-                    var fileHash = Helpers.CalcSHA256(file);
-                    rated = ratedTrackFileHashes.ContainsKey(fileHash);
-                    if (rated) foundRatedTrackNoteHashes.Add(ratedTrackFileHashes[fileHash].note_hash);
+                    var hash = CalcFileHash(chartPath);
+                    rated = ratedTrackHashes.ContainsKey(hash);
+                    if (rated) foundRatedTrackNoteHashes.Add(ratedTrackHashes[hash].note_hash);
                 }
                 else
                 {
@@ -65,20 +67,29 @@ public class TrackLoaded : TracksLoadedEvent.Listener
             newTrack.scores = scores != null ? scores.Value.highScores.ToArray() : new int[Plugin.TRACK_SCORE_LENGTH];
             Plugin.TrackDict.TryAdd(track.trackref, newTrack);
         }
-        var missingRatedTracks = new Dictionary<string, TootTally.SearchTrackResult>();
-        foreach (var track in ratedTracks)
+
+        var missingRatedTracks = ratedTracks.Where(track => !foundRatedTrackNoteHashes.Contains(track.note_hash) && !track.is_official).ToList();
+        Plugin.Log.LogInfo($"Rated tracks: {ratedTracks.Count()} total. {missingRatedTracks.Count} missing");
+        foreach (var track in missingRatedTracks.OrderBy(i => i.short_name))
         {
-            if (!foundRatedTrackNoteHashes.Contains(track.note_hash) && track.mirror != null)
-            {
-                missingRatedTracks.TryAdd(track.mirror, track);
-            }
-        }
-        Plugin.Log.LogInfo($"Rated tracks: {ratedTracks.Count} total. {missingRatedTracks.Count} missing");
-        foreach (var track in missingRatedTracks.Values.OrderBy(i => i.short_name))
-        {
-            Plugin.Log.LogDebug($"{track.short_name} - {track.mirror}");
+            Plugin.Log.LogDebug($"{track.short_name} - {(track.mirror == null ? track.download : track.mirror)}");
         }
         Plugin.Log.LogDebug($"Elapsed {DateTime.Now - start}");
+    }
+
+    public static string CalcFileHash(string fileLocation)
+    {
+        var data = Encoding.UTF8.GetBytes(File.ReadAllText(fileLocation));
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            string ret = "";
+            byte[] hashArray = sha256.ComputeHash(data);
+            foreach (byte b in hashArray)
+            {
+                ret += $"{b:x2}";
+            }
+            return ret;
+        }
     }
 
     public static void FilterTracks(LevelSelectController __instance)
