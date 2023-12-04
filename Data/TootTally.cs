@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BepInEx;
 using Newtonsoft.Json;
 using UnityEngine.Networking;
@@ -29,8 +30,10 @@ public class TootTally
         public string file_hash;
         public decimal difficulty;
         public string author;
+        public string download;
         public string mirror;
         public bool is_official;
+        public bool is_rated;
     }
 
     public static IEnumerator<UnityWebRequestAsyncOperation> GetRatedTracks()
@@ -51,13 +54,13 @@ public class TootTally
         }
     }
 
-    public static List<SearchTrackResult> ReadRatedTracks()
+    public static IEnumerable<SearchTrackResult> ReadRatedTracks()
     {
         try
         {
             string responseText = File.ReadAllText(RatedTracksPath);
             var response = JsonConvert.DeserializeObject<SearchResponse>(responseText);
-            return response.results;
+            return response.results.Where(i => i.is_rated);
         }
         catch (Exception e)
         {

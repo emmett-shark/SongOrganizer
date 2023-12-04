@@ -170,8 +170,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         foreach (var filterOption in face.GetComponentsInChildren<Button>())
         {
             var filterOptionRect = filterOption.GetComponent<RectTransform>();
-            Plugin.Log.LogDebug(filterOptionRect.rect);
-            Plugin.Log.LogDebug(filterOptionRect.anchoredPosition);
             filterOptionRect.anchoredPosition = new Vector2(filterOptionRect.anchoredPosition.x, filterOptionRect.anchoredPosition.y + 90);
         }
 
@@ -254,6 +252,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
                 image.rectTransform.sizeDelta = new Vector2(20, 20);
             }
         }
+        var label = toggle.GetComponentInChildren<Text>();
+        label.rectTransform.sizeDelta = new Vector2(180, label.rectTransform.sizeDelta.y);
         return toggle;
     }
     #endregion
