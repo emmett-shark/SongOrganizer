@@ -82,13 +82,13 @@ public class TrackLoaded : TracksLoadedEvent.Listener
         var data = Encoding.UTF8.GetBytes(File.ReadAllText(fileLocation));
         using (SHA256 sha256 = SHA256.Create())
         {
-            string ret = "";
+            StringBuilder sb = new StringBuilder();
             byte[] hashArray = sha256.ComputeHash(data);
             foreach (byte b in hashArray)
             {
-                ret += $"{b:x2}";
+                sb.Append(b.ToString("x2"));
             }
-            return ret;
+            return sb.ToString();
         }
     }
 

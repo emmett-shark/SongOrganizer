@@ -12,6 +12,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.3.6
+- Fix for TC 1.18B
+
 v1.3.5
 - Log mirrors instead of the original download links
 - Remove delete buttons because they don't work

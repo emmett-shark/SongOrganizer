@@ -12,7 +12,7 @@ public class TootTally
 {
     public static string RatedTracksPath = Paths.ConfigPath + "/rated.json";
     public const string API_URL = "https://toottally.com";
-    public const string RATED_ENDPOINT = "/api/search/?rated=1&page=1&page_size=100000";
+    public const string RATED_ENDPOINT = "/api/search/?rated=1&page=1&page_size=100000&fields=track_ref,short_name,name,note_hash,file_hash,difficulty,author,download,mirror,is_official,is_rated";
 
     [Serializable]
     public class SearchResponse
