@@ -5,6 +5,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace SongOrganizer;
@@ -51,8 +52,12 @@ public class Plugin : BaseUnityPlugin
             SearchValue = base.Config.Bind(SEARCH_SECTION, nameof(Options.SearchValue), ""),
         };
         StartCoroutine(TootTally.GetRatedTracks());
+
+        SceneManager.sceneUnloaded += UnloadModule;
         new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
     }
+
+    public static void UnloadModule(Scene scene) => UnloadModule();
 
     public static void UnloadModule()
     {

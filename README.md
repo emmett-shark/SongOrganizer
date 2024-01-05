@@ -12,6 +12,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.3.7
+- Fix for multiplayer
+
 v1.3.6
 - Fix for TC 1.18B
 
