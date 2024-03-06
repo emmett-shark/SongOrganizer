@@ -6,6 +6,7 @@ using HarmonyLib;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 namespace SongOrganizer.Patches;
@@ -213,6 +214,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     {
         GameObject sortObject = GameObject.Find(SORT_BUTTON_PATH);
         var sort = Instantiate(sortObject.GetComponent<Button>(), face.transform.transform);
+        Destroy(sort.GetComponentInChildren<LocalizeStringEvent>());
         sort.name = sortOption;
         var rectTransform = sort.GetComponent<RectTransform>();
         rectTransform.anchoredPosition = new Vector2(0, y);

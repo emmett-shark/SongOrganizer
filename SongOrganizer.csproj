@@ -11,9 +11,9 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
-    <PackageReference Include="TromboneChamp.GameLibs" Version="1.13.0-beta" />
+    <PackageReference Include="TromboneChamp.GameLibs" Version="1.20.0-beta" />
+    <PackageReference Include="TromboneChamp.BaboonAPI" Version="2.7.0-alpha.1" />
     <PackageReference Include="TromboneChamp.TrombLoader" Version="2.1.0" />
-    <PackageReference Include="TromboneChamp.BaboonAPI" Version="2.5.0" />
     <PackageReference Include="UnityEngine.Modules" Version="2019.3.11" IncludeAssets="compile" />
   </ItemGroup>
 
