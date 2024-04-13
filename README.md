@@ -12,6 +12,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.3.9
+- Fix for search bar for TC 1.21
+
 v1.3.8
 - Fix for localization for TC 1.20
 

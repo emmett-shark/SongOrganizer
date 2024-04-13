@@ -5,6 +5,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
+using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -22,7 +23,8 @@ public class Plugin : BaseUnityPlugin
 
     public static Toggle Toggle;
     public static Button Button;
-    public static InputField SearchInput;
+    public static TMP_InputField InputFieldPrefab;
+    public static TMP_InputField SearchInput;
     public static Image Star;
 
     public static Dictionary<string, Track> TrackDict = new Dictionary<string, Track>();

@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
@@ -264,74 +265,47 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private static void AddSearchBar(LevelSelectController __instance)
     {
         var fullscreenPanel = GameObject.Find(FULLSCREENPANEL);
-
-        var titleBar = Instantiate(GameObject.Find(TITLE_BAR), fullscreenPanel.transform);
-        titleBar.name = "search underline";
-        var titleRectTransform = titleBar.GetComponent<RectTransform>();
-        titleRectTransform.anchoredPosition = new Vector2(145, -30);
-        titleRectTransform.sizeDelta = new Vector2(275, 200);
-
-        var searchBar = Instantiate(GameObject.Find(COMPOSER_NAME_PATH), fullscreenPanel.transform);
-        var searchRectTransform = searchBar.GetComponent<RectTransform>();
-        searchRectTransform.anchoredPosition = new Vector2(-130, 200);
-        searchRectTransform.sizeDelta = new Vector2(250, 14);
-        searchRectTransform.rotation = Quaternion.identity;
-
-        var searchText = searchBar.transform.GetComponent<Text>();
-        searchText.text = Plugin.Options.SearchValue.Value;
-        searchText.alignment = TextAnchor.MiddleLeft;
-
-        Plugin.SearchInput = searchBar.AddComponent<InputField>();
-        Plugin.SearchInput.textComponent = searchText;
-        Plugin.SearchInput.name = "search";
-        Plugin.SearchInput.onValueChanged.AddListener(val => SearchListener(val, __instance));
-        ClearSearchButton(__instance, searchText);
-
         Destroy(__instance.scenetitle);
-    }
 
-    private static Button ClearSearchButton(LevelSelectController __instance, Text scoreText)
-    {
-        Button deleteButton = AddDeleteButton(scoreText);
-        deleteButton.name = $"clear search";
+        Plugin.SearchInput = Instantiate(Plugin.InputFieldPrefab, fullscreenPanel.transform);
+        Plugin.SearchInput.name = "SearchInput";
+        Plugin.SearchInput.GetComponent<RectTransform>().anchoredPosition = new Vector2(190, 420);
+        Plugin.SearchInput.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 14);
+        Plugin.SearchInput.text = Plugin.Options.SearchValue.Value;
+        Plugin.SearchInput.onEndEdit.AddListener(text => Plugin.SearchInput.text = text);
+        Plugin.SearchInput.onValueChanged.AddListener(text =>
+        {
+            Plugin.Options.SearchValue.Value = text;
+            TrackLoaded.FilterTracks(__instance);
+        });
+
+        Button deleteButton = AddDeleteButton(Plugin.SearchInput.textComponent);
+        deleteButton.name = "clear search";
         deleteButton.onClick.AddListener(() => {
             Plugin.SearchInput.text = "";
-            scoreText.text = "";
-            SearchListener("", __instance);
+            Plugin.SearchInput.textComponent.text = "";
+            Plugin.Options.SearchValue.Value = "";
+            TrackLoaded.FilterTracks(__instance);
         });
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
 
-        deleteRectTransform.sizeDelta = new Vector2(15, 15);
-        deleteRectTransform.anchoredPosition = new Vector2(-25, 0);
-
-        var deleteText = deleteButton.GetComponentInChildren<Text>();
-        deleteText.text = "X";
-        deleteText.fontSize = 12;
-
-        return deleteButton;
-    }
-
-    private static void SearchListener(string val, LevelSelectController __instance)
-    {
-        Plugin.Options.SearchValue.Value = val;
-        TrackLoaded.FilterTracks(__instance);
     }
     #endregion
 
-    private static Button AddDeleteButton(Text scoreText)
+    private static Button AddDeleteButton(TMP_Text scoreText)
     {
         var scoreRectTransform = scoreText.GetComponent<RectTransform>();
         var deleteButton = Instantiate(Plugin.Button, scoreRectTransform);
         var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
         deleteButton.onClick.RemoveAllListeners();
 
-        deleteRectTransform.sizeDelta = new Vector2(18, 18);
+        deleteRectTransform.sizeDelta = new Vector2(15, 15);
         deleteRectTransform.position = scoreRectTransform.position;
-        deleteRectTransform.anchoredPosition = new Vector2(-25, 5);
+        deleteRectTransform.anchoredPosition = new Vector2(-20, 15);
 
         var deleteText = deleteButton.GetComponentInChildren<Text>();
         deleteText.text = "X";
-        deleteText.fontSize = 15;
+        deleteText.fontSize = 12;
         return deleteButton;
     }
 }
