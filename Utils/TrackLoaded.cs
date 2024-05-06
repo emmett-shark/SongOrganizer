@@ -150,6 +150,7 @@ public class TrackLoaded : TracksLoadedEvent.Listener
         return track.trackname_long.ToLower().Contains(search)
             || track.trackname_short.ToLower().Contains(search)
             || track.artist.ToLower().Contains(search)
+            || track.genre.ToLower().Contains(search)
             || track.desc.ToLower().Contains(search);
     }
 }

@@ -2,7 +2,7 @@
 
 ## Features
 - Filter by default/custom, played/unplayed, S-ranked/non-S-ranked, rated/unrated tracks
-- Search bar: searches by long name, short name, artist, description
+- Search bar: searches by long name, short name, artist, genre, description
 - Save your sort, filter, last song index to `<TromboneChampDir>/BepInEx/config/SongOrganizer.cfg`
 - Search by first letter: typing a character (A-Z, 0-9) in track select will hop to the next track whose short name starts with that character
 - Delete highscores individually and by song
@@ -12,6 +12,9 @@
 - Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
 
 ## Changelog
+v1.3.10
+- Search by genre
+
 v1.3.9
 - Fix for search bar for TC 1.21
 
