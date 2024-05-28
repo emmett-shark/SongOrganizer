@@ -2,16 +2,23 @@
 
 ## Features
 - Filter by default/custom, played/unplayed, S-ranked/non-S-ranked, rated/unrated tracks
+- Filter by difficulty range
 - Search bar: searches by long name, short name, artist, genre, description
-- Save your sort, filter, last song index to `<TromboneChampDir>/BepInEx/config/SongOrganizer.cfg`
+- Save your sort, filter, last song index to `<R2modmanProfileFolder>/BepInEx/config/SongOrganizer.cfg`
 - Search by first letter: typing a character (A-Z, 0-9) in track select will hop to the next track whose short name starts with that character
-- Delete highscores individually and by song
+- Calculate difficulty of all tracks if TootTallyDiffCalcLibs exists
 
 ## Usage
-- Install BepInEx if you have not already done so. [Guide](https://trombone.wiki/#/installing-mods)
-- Place the .dll in `<TromboneChampDir>/BepInEx/plugins`
+- Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v.1.4.0
+- If TootTallyDiffCalcLibs exists, use it for star sort and search
+- Add slider to filter by difficulty range
+- Make multiple requests to toottally instead of getting 10000000 at a time
+- Fix base game bug that breaks the song select screen when tmb difficulty is outside [0, 10]
+- Stop logging all your missing rated charts
+
 v1.3.10
 - Search by genre
 

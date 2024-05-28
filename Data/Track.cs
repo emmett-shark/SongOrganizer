@@ -6,6 +6,7 @@ public class Track : SingleTrackData
     public bool rated { get; set; }
     public string letterScore { get; set; }
     public int[] scores { get; set; }
+    public float stars;
 
     public Track() { }
 
@@ -20,6 +21,7 @@ public class Track : SingleTrackData
         difficulty = other.difficulty;
         tempo = other.tempo;
         length = other.length;
+        sort_order = other.sort_order;
         trackindex = other.trackindex;
         trackref = other.trackref;
     }

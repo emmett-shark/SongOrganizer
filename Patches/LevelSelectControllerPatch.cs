@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using BaboonAPI.Hooks.Tracks;
 using BepInEx.Configuration;
 using HarmonyLib;
+using SongOrganizer.Assets;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
 using TMPro;
+using Unity.Audio;
 using UnityEngine;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
@@ -30,6 +32,8 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
         }
         if (sortcriteria == "default")
             __instance.alltrackslist.Sort((t1, t2) => t1.trackindex.CompareTo(t2.trackindex));
+        else if (sortcriteria == "difficulty" && __instance.alltrackslist.TrueForAll(track => track is Track))
+            __instance.alltrackslist.Sort((t1, t2) => ((Track)t1).stars.CompareTo(((Track)t2).stars));
         else if (sortcriteria == "difficulty")
             __instance.alltrackslist.Sort((t1, t2) => t1.difficulty.CompareTo(t2.difficulty));
         else if (sortcriteria == "alpha")
@@ -130,6 +134,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private const string SORT_BUTTON_PATH = $"{SORT_DROPDROPDOWN_FACE_PATH}/btn_sort_length";
     private const string COMPOSER_NAME_PATH = $"{FULLSCREENPANEL}/capsules/composername";
     private const string TITLE_BAR = $"{FULLSCREENPANEL}/title bar";
+    private const string SLIDER_PATH = $"{FULLSCREENPANEL}/Slider";
 
     static void Prefix()
     {
@@ -143,16 +148,17 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
     static void Postfix(LevelSelectController __instance)
     {
-        var ratedTracks = TootTally.ReadRatedTracks();
-        if (Plugin.TrackLoaded == null)
+        if (Plugin.RefreshLevelSelect == null)
         {
-            Plugin.TrackLoaded = new TrackLoaded(__instance, ratedTracks);
-            TracksLoadedEvent.EVENT.Register(Plugin.TrackLoaded);
-            Plugin.TrackLoaded.OnTracksLoaded(null);
+            TrackCalculation.ReadRatedTracksFromFile();
+            Plugin.RefreshLevelSelect = new RefreshLevelSelect(__instance);
+            TracksLoadedEvent.EVENT.Register(Plugin.RefreshLevelSelect);
+            Plugin.RefreshLevelSelect.OnTracksLoaded(null);
         }
 
         AddOptions(__instance);
         AddSearchBar(__instance);
+        AddStarSlider(__instance);
     }
 
     #region AddOptions
@@ -194,7 +200,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     private static void ToggleListener(ConfigEntry<bool> configEntry, bool b, LevelSelectController __instance)
     {
         configEntry.Value = b;
-        TrackLoaded.FilterTracks(__instance);
+        RefreshLevelSelect.FilterTracks(__instance);
     }
 
     private static ConfigEntry<bool> GetConfigEntry(FilterOption filterOption) =>
@@ -261,11 +267,23 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     }
     #endregion
 
-    #region AddSearchBar
+    private static void AddStarSlider(LevelSelectController __instance)
+    {
+        var fullscreenPanel = GameObject.Find(FULLSCREENPANEL);
+
+        var description = Instantiate(__instance.label_speed_slider, fullscreenPanel.transform);
+        description.name = "StarSliderDescription";
+        description.text = "Difficulty range:";
+        description.GetComponent<RectTransform>().anchoredPosition = new Vector2(-207, 175);
+
+        var doubleSlider = new DoubleSlider();
+        doubleSlider.Setup(__instance, fullscreenPanel.transform, new Vector2(-115, 176));
+    }
+
     private static void AddSearchBar(LevelSelectController __instance)
     {
         var fullscreenPanel = GameObject.Find(FULLSCREENPANEL);
-        Destroy(__instance.scenetitle);
+        __instance.scenetitle.SetActive(false);
 
         Plugin.SearchInput = Instantiate(Plugin.InputFieldPrefab, fullscreenPanel.transform);
         Plugin.SearchInput.name = "SearchInput";
@@ -276,7 +294,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Plugin.SearchInput.onValueChanged.AddListener(text =>
         {
             Plugin.Options.SearchValue.Value = text;
-            TrackLoaded.FilterTracks(__instance);
+            RefreshLevelSelect.FilterTracks(__instance);
         });
 
         Button deleteButton = AddDeleteButton(Plugin.SearchInput.textComponent);
@@ -285,12 +303,9 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             Plugin.SearchInput.text = "";
             Plugin.SearchInput.textComponent.text = "";
             Plugin.Options.SearchValue.Value = "";
-            TrackLoaded.FilterTracks(__instance);
+            RefreshLevelSelect.FilterTracks(__instance);
         });
-        var deleteRectTransform = deleteButton.GetComponent<RectTransform>();
-
     }
-    #endregion
 
     private static Button AddDeleteButton(TMP_Text scoreText)
     {

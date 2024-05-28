@@ -15,4 +15,6 @@ public class Options
     public ConfigEntry<string> SortMode { get; set; }
     public ConfigEntry<int> LastIndex { get; set; }
     public ConfigEntry<string> SearchValue { get; set; }
+    public ConfigEntry<float> MinStar { get; set; }
+    public ConfigEntry<float> MaxStar { get; set; }
 }
