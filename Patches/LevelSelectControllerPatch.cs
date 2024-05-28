@@ -7,7 +7,6 @@ using SongOrganizer.Assets;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
 using TMPro;
-using Unity.Audio;
 using UnityEngine;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
@@ -31,7 +30,7 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
             LeanTween.scaleX(__instance.btnspanel, 1f, 0.2f).setEaseOutQuart();
         }
         if (sortcriteria == "default")
-            __instance.alltrackslist.Sort((t1, t2) => t1.trackindex.CompareTo(t2.trackindex));
+            __instance.alltrackslist.Sort((t1, t2) => t1.sort_order.CompareTo(t2.sort_order));
         else if (sortcriteria == "difficulty" && __instance.alltrackslist.TrueForAll(track => track is Track))
             __instance.alltrackslist.Sort((t1, t2) => ((Track)t1).stars.CompareTo(((Track)t2).stars));
         else if (sortcriteria == "difficulty")
