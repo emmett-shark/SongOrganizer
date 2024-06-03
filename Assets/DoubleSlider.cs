@@ -19,6 +19,8 @@ public class DoubleSlider : MonoBehaviour
     public void Setup(LevelSelectController __instance, Transform transform, Vector2 position)
     {
         maxSlider = CreateSlider(__instance, transform, position, Plugin.Options.MaxStar, ChangeMaxSlider);
+        maxSlider.transform.Find(FILL_PATH).GetComponent<Image>().color = OptionalTheme.colors.scrollSpeedSlider.fill;
+        maxSlider.transform.Find(BACKGROUND_PATH).GetComponent<Image>().color = OptionalTheme.colors.scrollSpeedSlider.background;
         maxSlider.name = $"StarSliderMax";
 
         minSlider = CreateSlider(__instance, transform, position, Plugin.Options.MinStar, ChangeMinSlider);
@@ -46,6 +48,7 @@ public class DoubleSlider : MonoBehaviour
         var starSliderLabel = Instantiate(__instance.label_speed_slider, handle.transform);
         starSliderLabel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         starSliderLabel.name = $"StarSliderLabel";
+        starSliderLabel.color = OptionalTheme.colors.scrollSpeedSlider.text;
         SetLabel(starSliderLabel, entry.Value);
 
         starSlider.GetComponent<RectTransform>().anchoredPosition = position;
@@ -53,6 +56,8 @@ public class DoubleSlider : MonoBehaviour
         starSlider.minValue = 0;
         starSlider.maxValue = Plugin.MAX_STARS;
         starSlider.value = entry.Value;
+        handle.gameObject.GetComponent<Image>().color = OptionalTheme.colors.scrollSpeedSlider.handle;
+
         starSlider.onValueChanged.AddListener(value =>
         {
             entry.Value = value;

@@ -12,7 +12,11 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
-v.1.4.0
+v1.4.1
+- Add fallback fonts for search
+- Add optional themes
+
+v1.4.0
 - If TootTallyDiffCalcLibs exists, use it for star sort and search
 - Add slider to filter by difficulty range
 - Make multiple requests to toottally instead of getting 10000000 at a time

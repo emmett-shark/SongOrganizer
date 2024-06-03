@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Linq;
+using HarmonyLib;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -62,12 +64,17 @@ public class HomeControllerStartPatch : MonoBehaviour
         GameObject gameObject2 = gameObject.transform.Find("AdvancedInfoPanel/primary-content/intro/copy").gameObject;
         GameObject gameObject3 = Instantiate(gameObject2);
         gameObject3.name = "ComfortaaTextPrefab";
-        gameObject3.SetActive(value: true);
+        gameObject3.SetActive(true);
         DestroyImmediate(gameObject3.GetComponent<Text>());
         var _comfortaaTextPrefab = gameObject3.AddComponent<TextMeshProUGUI>();
         _comfortaaTextPrefab.fontSize = 13f;
         _comfortaaTextPrefab.text = "DefaultText";
         _comfortaaTextPrefab.font = TMP_FontAsset.CreateFontAsset(gameObject2.GetComponent<Text>().font);
+
+        var start = DateTime.Now;
+        _comfortaaTextPrefab.font.fallbackFontAssetTable = Font.GetPathsToOSFonts()
+            .Select(path => TMP_FontAsset.CreateFontAsset(new Font(path))).ToList();
+        Plugin.Log.LogInfo($"Loaded {_comfortaaTextPrefab.font.fallbackFontAssetTable.Count} fallback fonts in {DateTime.Now - start}");
         _comfortaaTextPrefab.fontMaterial.SetFloat(ShaderUtilities.ID_FaceDilate, 0.25f);
         _comfortaaTextPrefab.fontMaterial.EnableKeyword(ShaderUtilities.Keyword_Outline);
         _comfortaaTextPrefab.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.25f);
@@ -85,7 +92,7 @@ public class HomeControllerStartPatch : MonoBehaviour
         tMP_Text.gameObject.GetComponent<RectTransform>().pivot = pivot;
         tMP_Text.gameObject.GetComponent<RectTransform>().sizeDelta = size;
         tMP_Text.enableWordWrapping = true;
-        tMP_Text.gameObject.SetActive(value: true);
+        tMP_Text.gameObject.SetActive(true);
         return tMP_Text;
     }
 }

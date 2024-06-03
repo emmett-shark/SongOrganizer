@@ -29,7 +29,7 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
     public void AddTracks(List<SingleTrackData> singleTrackDatas)
     {
         var start = DateTime.Now;
-        Plugin.Log.LogDebug($"Loading tracks: {singleTrackDatas} total, {Plugin.RatedTracks.Count} rated, {Plugin.StarDict.Count} star calcs");
+        Plugin.Log.LogDebug($"Loading tracks: {singleTrackDatas.Count} total, {Plugin.RatedTracks.Count} rated, {Plugin.StarDict.Count} star calcs");
         var ratedTrackHashes = Plugin.RatedTracks.ToLookup(i => i.file_hash);
         var ratedTrackRefs = new HashSet<string>(Plugin.RatedTracks.Select(i => i.track_ref));
         var foundRatedTrackNoteHashes = new HashSet<string>();

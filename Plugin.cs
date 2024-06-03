@@ -21,6 +21,7 @@ namespace SongOrganizer;
 [BepInDependency("TrombLoader")]
 [BepInDependency("ch.offbeatwit.baboonapi.plugin")]
 [BepInDependency("TootTallyDiffCalcLibs", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("TootTallyCore", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
     public static Plugin Instance;
@@ -36,7 +37,6 @@ public class Plugin : BaseUnityPlugin
 
     public static ConcurrentDictionary<string, Track> TrackDict = new();
     public static ConcurrentDictionary<string, float> StarDict = new();
-    public static ConcurrentDictionary<string, string> NoteHashDict = new();
     public static List<SearchTrackResult> RatedTracksPaged = new();
     public static List<SearchTrackResult> RatedTracks = new();
     public const int TRACK_SCORE_LENGTH = 5;

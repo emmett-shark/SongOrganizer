@@ -127,13 +127,12 @@ public class LevelSelectControllerPlayPatch : MonoBehaviour
 public class LevelSelectControllerStartPatch : MonoBehaviour
 {
     private const string FULLSCREENPANEL = "MainCanvas/FullScreenPanel";
-    private const string LEADERBOARD_PATH = $"{FULLSCREENPANEL}/Leaderboard";
+    private const string SORT_BUTTON_PATH = $"{FULLSCREENPANEL}/sort_button";
+    private const string SORT_BUTTON_SHADOW_PATH = $"{FULLSCREENPANEL}/sort_button/btn-shadow";
     private const string SORT_DROPDOWN_PATH = $"{FULLSCREENPANEL}/sort-dropdown";
-    private const string SORT_DROPDROPDOWN_FACE_PATH = $"{SORT_DROPDOWN_PATH}/face";
-    private const string SORT_BUTTON_PATH = $"{SORT_DROPDROPDOWN_FACE_PATH}/btn_sort_length";
-    private const string COMPOSER_NAME_PATH = $"{FULLSCREENPANEL}/capsules/composername";
+    private const string SORT_DROPDOWN_FACE_PATH = $"{SORT_DROPDOWN_PATH}/face";
+    private const string SORT_LENGTH_BUTTON_PATH = $"{SORT_DROPDOWN_FACE_PATH}/btn_sort_length";
     private const string TITLE_BAR = $"{FULLSCREENPANEL}/title bar";
-    private const string SLIDER_PATH = $"{FULLSCREENPANEL}/Slider";
 
     static void Prefix()
     {
@@ -147,6 +146,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
     static void Postfix(LevelSelectController __instance)
     {
+        OptionalTheme.Setup();
         if (Plugin.RefreshLevelSelect == null)
         {
             TrackCalculation.ReadRatedTracksFromFile();
@@ -164,9 +164,27 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
     // idk how these numbers work
     private static void AddOptions(LevelSelectController __instance)
     {
+        var sortButton = __instance.sortbutton.GetComponent<Button>();
+        var mainColor = OptionalTheme.colors.playButton.background;
+        sortButton.colors = new ColorBlock
+        {
+            normalColor = mainColor,
+            highlightedColor = new Color(mainColor.r + 0.3f, mainColor.g + 0.3f, mainColor.b + 0.3f),
+            pressedColor = new Color(mainColor.r + 0.6f, mainColor.g + 0.6f, mainColor.b + 0.6f),
+            colorMultiplier = 1
+        };
+
+        __instance.sortlabel.color = OptionalTheme.colors.playButton.text;
+        sortButton.transform.Find("arrow").GetComponent<Image>().color = __instance.sortlabel.color;
+
+        GameObject.Find(SORT_BUTTON_SHADOW_PATH).GetComponent<Image>().color = OptionalTheme.colors.playButton.shadow;
+
         GameObject sortDropdown = GameObject.Find(SORT_DROPDOWN_PATH);
         sortDropdown.transform.SetAsLastSibling();
-        GameObject face = GameObject.Find(SORT_DROPDROPDOWN_FACE_PATH);
+        sortDropdown.GetComponent<Image>().color = OptionalTheme.colors.playButton.shadow; // dropdown outline color
+        GameObject face = GameObject.Find(SORT_DROPDOWN_FACE_PATH);
+        face.GetComponent<Image>().color = mainColor; // dropdown color
+        foreach (var text in face.GetComponentsInChildren<Text>()) text.color = __instance.sortlabel.color;
         RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
         RectTransform faceRectTransform = face.GetComponent<RectTransform>();
         CreateSortOption(__instance, face, "artist", -75);
@@ -187,19 +205,17 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             ConfigEntry<bool> configEntry = GetConfigEntry(filterOption);
             if (configEntry == null) continue;
             filter.isOn = configEntry.Value;
-            filter.onValueChanged.AddListener(b => ToggleListener(configEntry, b, __instance));
+            filter.onValueChanged.AddListener(b =>
+            {
+                configEntry.Value = b;
+                RefreshLevelSelect.FilterTracks(__instance);
+            });
         }
         foreach (var button in face.GetComponentsInChildren<Button>())
         {
             RectTransform t = button.GetComponent<RectTransform>();
             t.anchoredPosition = new Vector2(t.anchoredPosition.x, t.anchoredPosition.y + 60);
         }
-    }
-
-    private static void ToggleListener(ConfigEntry<bool> configEntry, bool b, LevelSelectController __instance)
-    {
-        configEntry.Value = b;
-        RefreshLevelSelect.FilterTracks(__instance);
     }
 
     private static ConfigEntry<bool> GetConfigEntry(FilterOption filterOption) =>
@@ -218,7 +234,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
 
     private static void CreateSortOption(LevelSelectController __instance, GameObject face, string sortOption, float y)
     {
-        GameObject sortObject = GameObject.Find(SORT_BUTTON_PATH);
+        GameObject sortObject = GameObject.Find(SORT_LENGTH_BUTTON_PATH);
         var sort = Instantiate(sortObject.GetComponent<Button>(), face.transform.transform);
         Destroy(sort.GetComponentInChildren<LocalizeStringEvent>());
         sort.name = sortOption;
@@ -244,22 +260,15 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Text text = toggle.GetComponentInChildren<Text>();
         text.text = $"{name} tracks";
         text.fontSize = 13;
-        text.color = new Color(0.024f, 0.294f, 0.302f);
+        text.color = OptionalTheme.colors.playButton.text;
 
-        var images = toggle.GetComponentsInChildren<Image>();
-        foreach (var image in images)
-        {
-            if (image.name == "Background")
-            {
-                image.rectTransform.sizeDelta = new Vector2(0, 30);
-                image.color = new Color(.15294117647058823529411764705882f, 1, 1);
-            }
-            else if (image.name == "Checkmark")
-            {
-                image.rectTransform.anchoredPosition = new Vector2(-70, 20);
-                image.rectTransform.sizeDelta = new Vector2(20, 20);
-            }
-        }
+        var background = toggle.transform.Find("Background").GetComponent<Image>();
+        background.rectTransform.sizeDelta = new Vector2(0, 0);
+
+        var checkmark = toggle.transform.Find("Background/Checkmark").GetComponent<Image>();
+        checkmark.rectTransform.anchoredPosition = new Vector2(-70, 20);
+        checkmark.rectTransform.sizeDelta = new Vector2(20, 20);
+
         var label = toggle.GetComponentInChildren<Text>();
         label.rectTransform.sizeDelta = new Vector2(180, label.rectTransform.sizeDelta.y);
         return toggle;
@@ -273,6 +282,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         var description = Instantiate(__instance.label_speed_slider, fullscreenPanel.transform);
         description.name = "StarSliderDescription";
         description.text = "Difficulty range:";
+        description.color = OptionalTheme.colors.songName;
         description.GetComponent<RectTransform>().anchoredPosition = new Vector2(-207, 175);
 
         var doubleSlider = new DoubleSlider();
@@ -284,10 +294,15 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         var fullscreenPanel = GameObject.Find(FULLSCREENPANEL);
         __instance.scenetitle.SetActive(false);
 
+        var color = OptionalTheme.colors.leaderboard.text;
+        var textOutlineColor = OptionalTheme.colors.leaderboard.textOutline;
         Plugin.SearchInput = Instantiate(Plugin.InputFieldPrefab, fullscreenPanel.transform);
         Plugin.SearchInput.name = "SearchInput";
         Plugin.SearchInput.GetComponent<RectTransform>().anchoredPosition = new Vector2(190, 420);
         Plugin.SearchInput.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 14);
+        Plugin.SearchInput.image.color = color;
+        Plugin.SearchInput.textComponent.color = color;
+        Plugin.SearchInput.textComponent.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, textOutlineColor);
         Plugin.SearchInput.text = Plugin.Options.SearchValue.Value;
         Plugin.SearchInput.onEndEdit.AddListener(text => Plugin.SearchInput.text = text);
         Plugin.SearchInput.onValueChanged.AddListener(text =>
@@ -316,10 +331,12 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         deleteRectTransform.sizeDelta = new Vector2(15, 15);
         deleteRectTransform.position = scoreRectTransform.position;
         deleteRectTransform.anchoredPosition = new Vector2(-20, 15);
+        deleteButton.colors = OptionalTheme.colors.replayButton.colors;
 
         var deleteText = deleteButton.GetComponentInChildren<Text>();
         deleteText.text = "X";
         deleteText.fontSize = 12;
+        deleteText.color = OptionalTheme.colors.replayButton.text;
         return deleteButton;
     }
 }
