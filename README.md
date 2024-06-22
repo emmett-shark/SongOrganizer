@@ -12,6 +12,9 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.4.2
+- Rated track filter now accounts for different versions of charts
+
 v1.4.1
 - Add fallback fonts for search
 - Add optional themes

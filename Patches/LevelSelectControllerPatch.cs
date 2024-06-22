@@ -149,7 +149,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         OptionalTheme.Setup();
         if (Plugin.RefreshLevelSelect == null)
         {
-            TrackCalculation.ReadRatedTracksFromFile();
             Plugin.RefreshLevelSelect = new RefreshLevelSelect(__instance);
             TracksLoadedEvent.EVENT.Register(Plugin.RefreshLevelSelect);
             Plugin.RefreshLevelSelect.OnTracksLoaded(null);

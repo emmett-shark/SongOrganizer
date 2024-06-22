@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -19,7 +18,8 @@ public class TrackCalculation
     {
         var start = DateTime.Now;
         Plugin.Log.LogDebug($"Starting star calculations {DateTime.Now}");
-        int maxParallelism = 4;
+
+        int maxParallelism = 8;
 
         Task.Run(() =>
         {
@@ -44,33 +44,58 @@ public class TrackCalculation
         });
     }
 
-    public static void CalculateBaseStars(string trackref)
+    private static void CalculateBaseStars(string trackref)
     {
         using var chart = ChartReader.ReadBaseGame(trackref);
-        ProcessStars(chart);
+        ProcessChart(chart);
     }
 
-    public static void CalculateCustomStars(string songFolder)
+    private static void CalculateCustomStars(string songFolder)
     {
         var chartPath = Path.Combine(songFolder, Globals.defaultChartName);
         if (!File.Exists(chartPath)) return;
         using var chart = ChartReader.ReadCustomChart(chartPath);
-        ProcessStars(chart);
+        ProcessChart(chart);
     }
 
-    private static void ProcessStars(Chart chart)
+    // build note string based on how toottally is doing it :skull:
+    public static string BuildNoteString(string tmb)
+    {
+        var noteArrayStart = tmb.IndexOf('[', tmb.IndexOf("notes\""));
+        var notes = new StringBuilder();
+        var endCount = 0;
+        for (int i = noteArrayStart; i < tmb.Length && endCount < 2; i++)
+        {
+            if (char.IsWhiteSpace(tmb[i])) continue;
+            notes.Append(tmb[i]);
+            if (tmb[i] == '[')
+            {
+                endCount = 0;
+            }
+            else if (tmb[i] == ']')
+            {
+                endCount++;
+            }
+            else if (tmb[i] == ',')
+            {
+                notes.Append(' ');
+            }
+        }
+        return notes.ToString();
+    }
+
+    private static void ProcessChart(Chart chart)
     {
         chart.ProcessLite();
-        var stars = chart.performances.starRatingDict[0];
-        Plugin.StarDict[chart.trackRef] = stars;
+        Plugin.StarDict[chart.trackRef] = chart.performances.starRatingDict[0];
     }
 
-    public static string CalcFileHash(string str)
+    public static string CalcHash(string str)
     {
         var data = Encoding.UTF8.GetBytes(str);
         using SHA256 sha256 = SHA256.Create();
         byte[] hashArray = sha256.ComputeHash(data);
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         foreach (byte b in hashArray)
         {
             sb.Append(b.ToString("x2"));

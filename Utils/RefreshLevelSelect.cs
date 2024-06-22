@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,12 +9,19 @@ using Microsoft.FSharp.Collections;
 using SongOrganizer.Data;
 using TrombLoader.CustomTracks;
 using TrombLoader.Helpers;
+using static SongOrganizer.Utils.TootTallyWebClient;
+using static SongOrganizer.Utils.TrackCalculation;
 
 namespace SongOrganizer.Utils;
 
 public class RefreshLevelSelect : TracksLoadedEvent.Listener
 {
     private LevelSelectController __instance;
+
+    private static ILookup<string, SearchTrackResult> ratedTrackHashes;
+    private static ILookup<string, SearchTrackResult> ratedTrackNoteHashes;
+    private static HashSet<string> ratedTrackRefs;
+    private static ConcurrentBag<string> foundNoteHashes;
 
     public RefreshLevelSelect(LevelSelectController instance)
     {
@@ -30,34 +38,22 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
     {
         var start = DateTime.Now;
         Plugin.Log.LogDebug($"Loading tracks: {singleTrackDatas.Count} total, {Plugin.RatedTracks.Count} rated, {Plugin.StarDict.Count} star calcs");
-        var ratedTrackHashes = Plugin.RatedTracks.ToLookup(i => i.file_hash);
-        var ratedTrackRefs = new HashSet<string>(Plugin.RatedTracks.Select(i => i.track_ref));
-        var foundRatedTrackNoteHashes = new HashSet<string>();
+
+        ReadRatedTracksFromFile();
+        foundNoteHashes = new();
+        ratedTrackHashes = Plugin.RatedTracks.ToLookup(i => i.file_hash);
+        ratedTrackNoteHashes = Plugin.RatedTracks.ToLookup(i => i.note_hash);
+        ratedTrackRefs = new HashSet<string>(Plugin.RatedTracks.Select(i => i.track_ref));
+
         Plugin.TrackDict.Clear();
-        foreach (var track in singleTrackDatas)
+        singleTrackDatas.AsParallel().ForAll(track =>
         {
             bool isBaseGame = TrackLookup.lookup(track.trackref) is BaseGameTrack;
-            bool rated = false;
-            if (ratedTrackRefs.Contains(track.trackref))
-            {
-                if (!isBaseGame)
-                {
-                    var customTrack = TrackLookup.lookup(track.trackref) as CustomTrack;
-                    var chartPath = Path.Combine(customTrack.folderPath, Globals.defaultChartName);
-                    var hash = TrackCalculation.CalcFileHash(File.ReadAllText(chartPath));
-                    rated = ratedTrackHashes.Contains(hash);
-                    if (rated) foundRatedTrackNoteHashes.Add(ratedTrackHashes[hash].First().note_hash);
-                }
-                else
-                {
-                    rated = true;
-                }
-            }
             track.difficulty = track.difficulty > 10 ? 10 : track.difficulty;
             track.difficulty = track.difficulty < 0 ? 0 : track.difficulty;
             Track newTrack = new(track);
             newTrack.custom = !isBaseGame;
-            newTrack.rated = rated;
+            newTrack.rated = IsRated(isBaseGame, track.trackref);
             newTrack.stars = track.difficulty;
             if (Plugin.StarDict.ContainsKey(track.trackref))
                 newTrack.stars = Plugin.StarDict[track.trackref];
@@ -65,10 +61,36 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
             newTrack.letterScore = scores != null ? scores.Value.highestRank : "-";
             newTrack.scores = scores != null ? scores.Value.highScores.ToArray() : new int[Plugin.TRACK_SCORE_LENGTH];
             Plugin.TrackDict.TryAdd(track.trackref, newTrack);
-        }
+        });
 
-        var missingRatedTracks = Plugin.RatedTracks.Where(track => !foundRatedTrackNoteHashes.Contains(track.note_hash) && !track.is_official).ToList();
+        var missingRatedTracks = Plugin.RatedTracks.Where(track => !foundNoteHashes.Contains(track.note_hash) && !track.is_official).ToList();
+        //foreach (var missingRatedTrack in missingRatedTracks) Plugin.Log.LogDebug($"{missingRatedTrack.short_name} {missingRatedTrack.mirror}");
         Plugin.Log.LogDebug($"{missingRatedTracks.Count} rated tracks missing. Loading tracks elapsed: {DateTime.Now - start}");
+    }
+
+    private static bool IsRated(bool isBaseGame, string trackref)
+    {
+        if (isBaseGame) return ratedTrackRefs.Contains(trackref);
+        var customTrack = TrackLookup.lookup(trackref) as CustomTrack;
+        var chartPath = Path.Combine(customTrack.folderPath, Globals.defaultChartName);
+        var tmb = File.ReadAllText(chartPath);
+        if (ratedTrackRefs.Contains(trackref))
+        {
+            var fileHash = CalcHash(tmb);
+            if (ratedTrackHashes.Contains(fileHash))
+            {
+                foundNoteHashes.Add(ratedTrackHashes[fileHash].FirstOrDefault().note_hash);
+                return true;
+            }
+        }
+        var notes = BuildNoteString(tmb);
+        var noteHash = CalcHash(notes);
+        if (ratedTrackNoteHashes.Contains(noteHash))
+        {
+            foundNoteHashes.Add(noteHash);
+            return true;
+        }
+        return false;
     }
 
     public static void FilterTracks(LevelSelectController __instance)
