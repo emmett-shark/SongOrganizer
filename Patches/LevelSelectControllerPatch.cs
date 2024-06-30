@@ -313,10 +313,13 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Button deleteButton = AddDeleteButton(Plugin.SearchInput.textComponent);
         deleteButton.name = "clear search";
         deleteButton.onClick.AddListener(() => {
+            var selectedTrackref = __instance.alltrackslist[__instance.songindex].trackref;
             Plugin.SearchInput.text = "";
             Plugin.SearchInput.textComponent.text = "";
             Plugin.Options.SearchValue.Value = "";
             RefreshLevelSelect.FilterTracks(__instance);
+            __instance.songindex = __instance.alltrackslist.FindIndex(track => track.trackref == selectedTrackref);
+            __instance.populateSongNames(false);
         });
     }
 

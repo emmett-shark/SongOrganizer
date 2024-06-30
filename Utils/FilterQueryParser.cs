@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using BepInEx;
+﻿using BepInEx;
 using SongOrganizer.Data;
 
 namespace SongOrganizer.Utils;
@@ -41,80 +37,5 @@ public static class FilterQueryParser
             || track.artist.ToLower().Contains(search)
             || track.genre.ToLower().Contains(search)
             || track.desc.ToLower().Contains(search);
-    }
-
-    // working on copying osu's homework https://github.com/ppy/osu/blob/master/osu.Game/Screens/Select/FilterQueryParser.cs
-    /*
-## Search
-By default, search is matched by long name, short name, artist, genre, and description. Queries are case-insensitive. For more granular filtering, use the following:
-
-Filter          | Description
-------          | -----------
-`star`, `stars` | Star rating
-`bpm`           | Song tempo
-`status`        | Chart status. Value can be `r`/`u` (rated/unrated)
-
-Comparison | Description
----------- | -----------
-`=`        | Equal to
-`!=`       | Not equal to
-`<`        | Less than
-`>`        | Greater than
-`<=`       | Less than or equal to
-`>=`       | Greater than or equal to
-
-### Examples:
-
-Find charts with difficulty [4, 6)
-```
-stars>=4 stars<6
-```
-Find rated charts
-```
-status=r
-```
-     */
-    private static readonly Regex QUERY_SYNTAX_REGEX = new Regex(
-            @"\b(?<key>\w+)(?<op>(=|!=|(<|>)=?))(?<value>("".*""[!]?)|(\S*))",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    public const float tolerance = 0.05f;
-
-    private static string ApplyQueries(string query, Track track)
-    {
-        foreach (Match match in QUERY_SYNTAX_REGEX.Matches(query))
-        {
-            string key = match.Groups["key"].Value;
-            var op = ParseOperator(match.Groups["op"].Value);
-            string value = match.Groups["value"].Value;
-
-            if (TryParseKeywordCriteria(key, value, op, track))
-                query = query.Replace(match.ToString(), "");
-        }
-        return query;
-    }
-
-    private static bool TryParseKeywordCriteria(string key, string value, Operator op, Track track)
-    {
-        return key switch
-        { 
-            "star" or "stars" => true,
-            "bpm" => true,
-            "status" => true,
-            _ => false,
-        };
-    }
-
-    private static Operator ParseOperator(string value)
-    {
-        return value switch
-        {
-            "=" => Operator.Equal,
-            "!=" => Operator.NotEqual,
-            "<" => Operator.Less,
-            "<=" => Operator.LessOrEqual,
-            ">" => Operator.Greater,
-            ">=" => Operator.GreaterOrEqual,
-            _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unsupported operator {value}"),
-        };
     }
 }
