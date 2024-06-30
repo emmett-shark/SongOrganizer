@@ -31,11 +31,11 @@ public static class FilterQueryParser
 
     private static bool Search(string query, Track track)
     {
-        string search = query.Trim();
-        return track.trackname_long.ToLower().Contains(search)
-            || track.trackname_short.ToLower().Contains(search)
-            || track.artist.ToLower().Contains(search)
-            || track.genre.ToLower().Contains(search)
-            || track.desc.ToLower().Contains(search);
+        string search = query.Trim().Replace(".", "");
+        return track.trackname_long.ToLower().Replace(".", "").Contains(search)
+            || track.trackname_short.ToLower().Replace(".", "").Contains(search)
+            || track.artist.ToLower().Replace(".", "").Contains(search)
+            || track.genre.ToLower().Replace(".", "").Contains(search)
+            || track.desc.ToLower().Replace(".", "").Contains(search);
     }
 }

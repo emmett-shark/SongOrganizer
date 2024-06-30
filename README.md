@@ -12,6 +12,9 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.4.4
+- Ignore periods in search
+
 v1.4.3
 - Clearing the search bar will now bring you to the song that was previously selected
 
