@@ -46,7 +46,7 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
         ratedTrackRefs = new HashSet<string>(Plugin.RatedTracks.Select(i => i.track_ref));
 
         Plugin.TrackDict.Clear();
-        singleTrackDatas.AsParallel().ForAll(track =>
+        singleTrackDatas.AsParallel().WithDegreeOfParallelism(Plugin.MAX_PARALLELISM).ForAll(track =>
         {
             bool isBaseGame = TrackLookup.lookup(track.trackref) is BaseGameTrack;
             track.difficulty = track.difficulty > 10 ? 10 : track.difficulty;
@@ -60,11 +60,12 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
             var scores = TrackLookup.lookupScore(track.trackref);
             newTrack.letterScore = scores != null ? scores.Value.highestRank : "-";
             newTrack.scores = scores != null ? scores.Value.highScores.ToArray() : new int[Plugin.TRACK_SCORE_LENGTH];
+            newTrack.isFavorite = Plugin.Options.ContainsFavorite(track.trackref);
             Plugin.TrackDict.TryAdd(track.trackref, newTrack);
         });
 
         var missingRatedTracks = Plugin.RatedTracks.Where(track => !foundNoteHashes.Contains(track.note_hash) && !track.is_official).ToList();
-        //foreach (var missingRatedTrack in missingRatedTracks) Plugin.Log.LogDebug($"{missingRatedTrack.short_name} {missingRatedTrack.mirror}");
+        //missingRatedTracks.ForEach(track => Plugin.Log.LogDebug($"{track.short_name} {track.mirror}"));
         Plugin.Log.LogDebug($"{missingRatedTracks.Count} rated tracks missing. Loading tracks elapsed: {DateTime.Now - start}");
     }
 

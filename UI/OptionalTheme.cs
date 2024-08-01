@@ -3,9 +3,9 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SongOrganizer.Assets;
+namespace SongOrganizer.UI;
 
-public class OptionalTheme
+public static class OptionalTheme
 {
     public static SongOrganizerColors colors;
 

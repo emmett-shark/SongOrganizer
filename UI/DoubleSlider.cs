@@ -4,7 +4,7 @@ using SongOrganizer.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SongOrganizer.Assets;
+namespace SongOrganizer.UI;
 
 public class DoubleSlider : MonoBehaviour
 {

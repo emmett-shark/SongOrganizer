@@ -33,7 +33,7 @@ public class Plugin : BaseUnityPlugin
     public static Button Button;
     public static TMP_InputField InputFieldPrefab;
     public static TMP_InputField SearchInput;
-    public static Image Star;
+    public static List<Button> FavoriteButtons = new();
 
     public static ConcurrentDictionary<string, Track> TrackDict = new();
     public static ConcurrentDictionary<string, float> StarDict = new();
@@ -41,6 +41,7 @@ public class Plugin : BaseUnityPlugin
     public static List<SearchTrackResult> RatedTracks = new();
     public const int TRACK_SCORE_LENGTH = 5;
     public const int MAX_STARS = 11;
+    public const int MAX_PARALLELISM = 8;
 
     public static readonly string RatedTracksPath = $"{Paths.ConfigPath}/rated.json";
     private const string FILTER_SECTION = "Filter";
@@ -54,20 +55,23 @@ public class Plugin : BaseUnityPlugin
         Log = Logger;
         Options = new Options
         {
-            ShowDefault = Config.Bind(FILTER_SECTION, nameof(Options.ShowDefault), true),
-            ShowCustom = Config.Bind(FILTER_SECTION, nameof(Options.ShowCustom), true),
-            ShowUnplayed = Config.Bind(FILTER_SECTION, nameof(Options.ShowUnplayed), true),
-            ShowPlayed = Config.Bind(FILTER_SECTION, nameof(Options.ShowPlayed), true),
-            ShowNotSRank = Config.Bind(FILTER_SECTION, nameof(Options.ShowNotSRank), true),
-            ShowSRank = Config.Bind(FILTER_SECTION, nameof(Options.ShowSRank), true),
-            ShowUnrated = Config.Bind(FILTER_SECTION, nameof(Options.ShowUnrated), true),
-            ShowRated = Config.Bind(FILTER_SECTION, nameof(Options.ShowRated), true),
+            ShowDefault = Config.Bind(FILTER_SECTION, nameof(Options.ShowDefault), false),
+            ShowCustom = Config.Bind(FILTER_SECTION, nameof(Options.ShowCustom), false),
+            ShowUnplayed = Config.Bind(FILTER_SECTION, nameof(Options.ShowUnplayed), false),
+            ShowPlayed = Config.Bind(FILTER_SECTION, nameof(Options.ShowPlayed), false),
+            ShowNotSRank = Config.Bind(FILTER_SECTION, nameof(Options.ShowNotSRank), false),
+            ShowSRank = Config.Bind(FILTER_SECTION, nameof(Options.ShowSRank), false),
+            ShowUnrated = Config.Bind(FILTER_SECTION, nameof(Options.ShowUnrated), false),
+            ShowRated = Config.Bind(FILTER_SECTION, nameof(Options.ShowRated), false),
+            ShowOnlyFavorites = Config.Bind(FILTER_SECTION, nameof(Options.ShowOnlyFavorites), false),
+            Favorites = Config.Bind(FILTER_SECTION, nameof(Options.Favorites), ""),
             SortMode = Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
             LastIndex = Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
             SearchValue = Config.Bind(SEARCH_SECTION, nameof(Options.SearchValue), ""),
             MinStar = Config.Bind(SEARCH_SECTION, nameof(Options.MinStar), 0f),
             MaxStar = Config.Bind(SEARCH_SECTION, nameof(Options.MaxStar), 11f),
         };
+        Options.SetFavorites();
         TrackCalculation.CalculateStars();
         var start = DateTime.Now;
         StartCoroutine(GetRatedTracksRequest(1, PAGE_SIZE, result =>

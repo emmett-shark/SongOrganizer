@@ -1,8 +1,9 @@
 # SongOrganizer
 
 ## Features
-- Filter by default/custom, played/unplayed, S-ranked/non-S-ranked, rated/unrated tracks
+- Filter by default/custom, played/unplayed, S-ranked/non-S-ranked, rated/unrated, favorite tracks
 - Filter by difficulty range
+- Add favorite tracks
 - Search bar: searches by long name, short name, artist, genre, description
 - Save your sort, filter, last song index to `<R2modmanProfileFolder>/BepInEx/config/SongOrganizer.cfg`
 - Search by first letter: typing a character (A-Z, 0-9) in track select will hop to the next track whose short name starts with that character
@@ -12,6 +13,11 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.5.0
+- Add favorites
+- Fix index sometimes being -1, I think
+- Fix song select freezing, I think
+
 v1.4.4
 - Ignore periods in search
 

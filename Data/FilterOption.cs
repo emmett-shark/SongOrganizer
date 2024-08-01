@@ -8,10 +8,12 @@ public enum FilterOption
     CUSTOM,
     UNPLAYED,
     PLAYED,
-    [Description("Non S rank")]
+    [Description("Non S Rank")]
     NOT_S_RANK,
-    [Description("S rank")]
+    [Description("S Rank")]
     S_RANK,
     UNRATED,
     RATED,
+    [Description("Only Fav")]
+    ONLY_FAVORITES,
 }

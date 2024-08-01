@@ -7,6 +7,7 @@ public class Track : SingleTrackData
     public string letterScore { get; set; }
     public int[] scores { get; set; }
     public float stars;
+    public bool isFavorite { get; set; }
 
     public Track() { }
 

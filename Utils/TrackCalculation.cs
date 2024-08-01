@@ -19,15 +19,13 @@ public class TrackCalculation
         var start = DateTime.Now;
         Plugin.Log.LogDebug($"Starting star calculations {DateTime.Now}");
 
-        int maxParallelism = 8;
-
         Task.Run(() =>
         {
             Directory.GetFiles(Globals.GetCustomSongsPath(), "song.tmb", SearchOption.AllDirectories)
                 .Concat(Directory.GetFiles(BepInEx.Paths.PluginPath, "song.tmb", SearchOption.AllDirectories))
                 .Select(i => Path.GetDirectoryName(i))
                 .AsParallel()
-                .WithDegreeOfParallelism(maxParallelism)
+                .WithDegreeOfParallelism(Plugin.MAX_PARALLELISM)
                 .ForAll(songFolder => CalculateCustomStars(songFolder));
             Plugin.Log.LogDebug($"Custom star calculation elapsed: {DateTime.Now - start}");
         });
@@ -38,7 +36,7 @@ public class TrackCalculation
                 .Select(i => i.Substring(trackassetDir.Length))
                 .Where(i => i != "freeplay")
                 .AsParallel()
-                .WithDegreeOfParallelism(maxParallelism)
+                .WithDegreeOfParallelism(Plugin.MAX_PARALLELISM)
                 .ForAll(trackref => CalculateBaseStars(trackref));
             Plugin.Log.LogDebug($"Base star calculation elapsed: {DateTime.Now - start}");
         });

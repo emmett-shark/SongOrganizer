@@ -12,6 +12,7 @@ public static class FilterQueryParser
             && ShowTrack(Plugin.Options.ShowSRank.Value, Plugin.Options.ShowNotSRank.Value, track.letterScore == "S")
             && ShowTrack(Plugin.Options.ShowRated.Value, Plugin.Options.ShowUnrated.Value, track.rated)
             && ShowTrack(Plugin.Options.MinStar.Value, Plugin.Options.MaxStar.Value, track.stars)
+            && FilterFavorites(Plugin.Options.ShowOnlyFavorites.Value, track.trackref)
             && ShowTrack(Plugin.Options.SearchValue.Value, track);
     }
 
@@ -22,16 +23,13 @@ public static class FilterQueryParser
     private static bool ShowTrack(float minStar, float maxStar, float stars) =>
         (maxStar >= Plugin.MAX_STARS && stars != stars) || (stars > minStar && (maxStar >= Plugin.MAX_STARS || stars <= maxStar));
 
+    private static bool FilterFavorites(bool onlyFavorites, string trackRef) =>
+        !onlyFavorites || (onlyFavorites && Plugin.Options.ContainsFavorite(trackRef));
+
     private static bool ShowTrack(string query, Track track)
     {
         if (query.IsNullOrWhiteSpace()) return true;
-        query = query.ToLower();
-        return Search(query, track);
-    }
-
-    private static bool Search(string query, Track track)
-    {
-        string search = query.Trim().Replace(".", "");
+        string search = query.ToLower().Trim().Replace(".", "");
         return track.trackname_long.ToLower().Replace(".", "").Contains(search)
             || track.trackname_short.ToLower().Replace(".", "").Contains(search)
             || track.artist.ToLower().Replace(".", "").Contains(search)
