@@ -71,8 +71,11 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
 
     private static bool IsRated(bool isBaseGame, string trackref)
     {
+        if (trackref == null) return false;
         if (isBaseGame) return ratedTrackRefs.Contains(trackref);
-        var customTrack = TrackLookup.lookup(trackref) as CustomTrack;
+        var track = TrackLookup.lookup(trackref);
+        if (track is not CustomTrack) return false;
+        var customTrack = track as CustomTrack;
         var chartPath = Path.Combine(customTrack.folderPath, Globals.defaultChartName);
         var tmb = File.ReadAllText(chartPath);
         if (ratedTrackRefs.Contains(trackref))

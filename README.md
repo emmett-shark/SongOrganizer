@@ -13,6 +13,9 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.5.1
+- Fix for crafted's custom track
+
 v1.5.0
 - Add favorites
 - Fix index sometimes being -1, I think
