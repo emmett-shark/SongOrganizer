@@ -6,6 +6,7 @@ using System.Linq;
 using BaboonAPI.Hooks.Tracks;
 using BaboonAPI.Internal.BaseGame;
 using Microsoft.FSharp.Collections;
+using Newtonsoft.Json;
 using SongOrganizer.Data;
 using TrombLoader.CustomTracks;
 using TrombLoader.Helpers;
@@ -18,11 +19,6 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
 {
     private LevelSelectController __instance;
 
-    private static ILookup<string, SearchTrackResult> ratedTrackHashes;
-    private static ILookup<string, SearchTrackResult> ratedTrackNoteHashes;
-    private static HashSet<string> ratedTrackRefs;
-    private static ConcurrentBag<string> foundNoteHashes;
-
     public RefreshLevelSelect(LevelSelectController instance)
     {
         __instance = instance;
@@ -34,26 +30,21 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
         FilterTracks(__instance);
     }
 
-    public void AddTracks(List<SingleTrackData> singleTrackDatas)
+    private void AddTracks(List<SingleTrackData> singleTrackDatas)
     {
         var start = DateTime.Now;
-        Plugin.Log.LogDebug($"Loading tracks: {singleTrackDatas.Count} total, {Plugin.RatedTracks.Count} rated, {Plugin.StarDict.Count} star calcs");
+        Plugin.Log.LogDebug($"Loading tracks: {singleTrackDatas.Count} total, {Plugin.StarDict.Count} star calcs");
 
-        ReadRatedTracksFromFile();
-        foundNoteHashes = new();
-        ratedTrackHashes = Plugin.RatedTracks.ToLookup(i => i.file_hash);
-        ratedTrackNoteHashes = Plugin.RatedTracks.ToLookup(i => i.note_hash);
-        ratedTrackRefs = new HashSet<string>(Plugin.RatedTracks.Select(i => i.track_ref));
-
+        CalculateRatedTracks(singleTrackDatas);
         Plugin.TrackDict.Clear();
-        singleTrackDatas.AsParallel().WithDegreeOfParallelism(Plugin.MAX_PARALLELISM).ForAll(track =>
+        singleTrackDatas.ForEach(track =>
         {
             bool isBaseGame = TrackLookup.lookup(track.trackref) is BaseGameTrack;
             track.difficulty = track.difficulty > 10 ? 10 : track.difficulty;
             track.difficulty = track.difficulty < 0 ? 0 : track.difficulty;
             Track newTrack = new(track);
             newTrack.custom = !isBaseGame;
-            newTrack.rated = IsRated(isBaseGame, track.trackref);
+            newTrack.rated = Plugin.RatedTrackrefs.Contains(track.trackref);
             newTrack.stars = track.difficulty;
             if (Plugin.StarDict.ContainsKey(track.trackref))
                 newTrack.stars = Plugin.StarDict[track.trackref];
@@ -64,15 +55,44 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
             Plugin.TrackDict.TryAdd(track.trackref, newTrack);
         });
 
-        var missingRatedTracks = Plugin.RatedTracks.Where(track => !foundNoteHashes.Contains(track.note_hash) && !track.is_official).ToList();
+        var missingRatedTracks = ratedTracks.Where(track => !foundNoteHashes.Contains(track.note_hash) && !track.is_official).ToList();
         //missingRatedTracks.ForEach(track => Plugin.Log.LogDebug($"{track.short_name} {track.mirror}"));
-        Plugin.Log.LogDebug($"{missingRatedTracks.Count} rated tracks missing. Loading tracks elapsed: {DateTime.Now - start}");
+        Plugin.Log.LogDebug($"{missingRatedTracks.Count} / {Plugin.RatedTrackrefs.Count} rated tracks missing. Loading tracks elapsed: {DateTime.Now - start}");
     }
 
-    private static bool IsRated(bool isBaseGame, string trackref)
+    private static List<SearchTrackResult> ratedTracks;
+    private static ILookup<string, SearchTrackResult> ratedTrackFileHashes;
+    private static ILookup<string, SearchTrackResult> ratedTrackNoteHashes;
+    private static HashSet<string> ratedTrackRefs;
+    private static ConcurrentBag<string> foundNoteHashes;
+    private static void CalculateRatedTracks(List<SingleTrackData> singleTrackDatas)
+    {
+        if (Plugin.RatedTrackrefs.Count > 0) return;
+        try
+        {
+            string responseText = File.ReadAllText(Plugin.RatedTracksPath);
+            var response = JsonConvert.DeserializeObject<SearchResponse>(responseText);
+            ratedTracks = response.results.Where(i => i.is_rated).ToList();
+            foundNoteHashes = new();
+            ratedTrackFileHashes = ratedTracks.ToLookup(i => i.file_hash);
+            ratedTrackNoteHashes = ratedTracks.ToLookup(i => i.note_hash);
+            ratedTrackRefs = new HashSet<string>(ratedTracks.Select(i => i.track_ref));
+            Plugin.RatedTrackrefs = new ConcurrentBag<string>(singleTrackDatas.AsParallel()
+                .WithDegreeOfParallelism(Plugin.MAX_PARALLELISM)
+                .Select(track => track.trackref)
+                .Where(trackref => IsRated(trackref))
+                .ToList());
+        }
+        catch (Exception e)
+        {
+            Plugin.Log.LogError($"Error calculating rated tracks\n{e.Message}");
+        }
+    }
+
+    private static bool IsRated(string trackref)
     {
         if (trackref == null) return false;
-        if (isBaseGame) return ratedTrackRefs.Contains(trackref);
+        if (TrackLookup.lookup(trackref) is BaseGameTrack) return ratedTrackRefs.Contains(trackref);
         var track = TrackLookup.lookup(trackref);
         if (track is not CustomTrack) return false;
         var customTrack = track as CustomTrack;
@@ -81,9 +101,9 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
         if (ratedTrackRefs.Contains(trackref))
         {
             var fileHash = CalcHash(tmb);
-            if (ratedTrackHashes.Contains(fileHash))
+            if (ratedTrackFileHashes.Contains(fileHash))
             {
-                foundNoteHashes.Add(ratedTrackHashes[fileHash].FirstOrDefault().note_hash);
+                foundNoteHashes.Add(ratedTrackFileHashes[fileHash].FirstOrDefault().note_hash);
                 return true;
             }
         }

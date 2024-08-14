@@ -200,8 +200,6 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             Plugin.SearchInput.textComponent.text = "";
             Plugin.Options.SearchValue.Value = "";
             RefreshLevelSelect.FilterTracks(__instance);
-            /*__instance.songindex = __instance.alltrackslist.FindIndex(track => track.trackref == selectedTrackref);
-            __instance.populateSongNames(false);*/
             GlobalVariables.levelselect_index = __instance.alltrackslist.FindIndex(track => track.trackref == selectedTrackref);
             GlobalVariables.levelselect_index = GlobalVariables.levelselect_index == -1 ? 0 : GlobalVariables.levelselect_index;
             __instance.sortTracks(GlobalVariables.sortmode, false);

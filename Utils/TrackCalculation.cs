@@ -4,11 +4,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using TootTallyDiffCalcLibs;
 using TrombLoader.Helpers;
 using UnityEngine;
-using static SongOrganizer.Utils.TootTallyWebClient;
 
 namespace SongOrganizer.Utils;
 
@@ -99,21 +97,5 @@ public class TrackCalculation
             sb.Append(b.ToString("x2"));
         }
         return sb.ToString();
-    }
-
-    public static void ReadRatedTracksFromFile()
-    {
-        if (Plugin.RatedTracks.Count > 0) return;
-        var start = DateTime.Now;
-        try
-        {
-            string responseText = File.ReadAllText(Plugin.RatedTracksPath);
-            var response = JsonConvert.DeserializeObject<SearchResponse>(responseText);
-            Plugin.RatedTracks = response.results.Where(i => i.is_rated).ToList();
-        }
-        catch (Exception e)
-        {
-            Plugin.Log.LogError($"Error reading rated.json\n{e.Message}");
-        }
     }
 }

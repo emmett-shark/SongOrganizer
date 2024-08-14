@@ -37,8 +37,8 @@ public class Plugin : BaseUnityPlugin
 
     public static ConcurrentDictionary<string, Track> TrackDict = new();
     public static ConcurrentDictionary<string, float> StarDict = new();
+    public static ConcurrentBag<string> RatedTrackrefs = new();
     public static List<SearchTrackResult> RatedTracksPaged = new();
-    public static List<SearchTrackResult> RatedTracks = new();
     public const int TRACK_SCORE_LENGTH = 5;
     public const int MAX_STARS = 11;
     public const int MAX_PARALLELISM = 8;
