@@ -26,7 +26,7 @@ public class Favorites : MonoBehaviour
 
         var songButton = parent.Find($"Button{i}");
         var rectTransform = songButton.GetComponent<RectTransform>();
-        favButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + 185, rectTransform.anchoredPosition.y + 206);
+        favButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(rectTransform.anchoredPosition.x - 246, rectTransform.anchoredPosition.y - 228);
 
         favButton.colors = off;
         favButton.onClick.AddListener(() =>

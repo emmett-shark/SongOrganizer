@@ -13,6 +13,9 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.5.3
+- Fix for TC 1.23
+
 v1.5.2
 - Only calculate rated tracks on first song select entry
 

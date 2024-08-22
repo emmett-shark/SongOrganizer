@@ -214,8 +214,8 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         deleteButton.onClick.RemoveAllListeners();
 
         deleteRectTransform.sizeDelta = new Vector2(15, 15);
-        deleteRectTransform.position = scoreRectTransform.position;
-        deleteRectTransform.anchoredPosition = new Vector2(-20, 15);
+        var pos = scoreRectTransform.position;
+        deleteRectTransform.position = new Vector3(pos.x, pos.y - 0.1f, pos.z);
         deleteButton.colors = OptionalTheme.colors.replayButton.colors;
 
         var deleteText = deleteButton.GetComponentInChildren<Text>();

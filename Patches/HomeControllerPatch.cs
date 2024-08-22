@@ -3,6 +3,7 @@ using System.Linq;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 namespace SongOrganizer.Patches;
@@ -16,7 +17,8 @@ public class HomeControllerStartPatch : MonoBehaviour
         Plugin.Toggle = Instantiate(__instance.set_tog_vsync);
         DontDestroyOnLoad(Plugin.Toggle);
 
-        Plugin.Button = Instantiate(__instance.graphicspanel.GetComponentInChildren<Button>());
+        var settingBtn = __instance.fullsettingspanel.transform.Find("Settings/GRAPHICS/btn_opengraphicspanel").gameObject.GetComponent<Button>();
+        Plugin.Button = Instantiate(settingBtn);
         Plugin.Button.onClick.RemoveAllListeners();
         DontDestroyOnLoad(Plugin.Button);
 
