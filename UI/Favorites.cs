@@ -22,6 +22,9 @@ public class Favorites : MonoBehaviour
         var favButton = Instantiate(Plugin.Button, GameObject.Find("Canvas").transform);
         favButton.name = $"favbutton";
         favButton.GetComponentInChildren<Text>().text = "";
+        var rectTransform = favButton.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + 5, rectTransform.anchoredPosition.y);
+
         favButton.colors = Plugin.Options.ContainsFavorite(GlobalVariables.chosen_track) ? on : off;
         favButton.onClick.AddListener(() =>
         {
