@@ -150,10 +150,10 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             Plugin.RefreshLevelSelect.OnTracksLoaded(null);
         }
 
-        new SortDropdown().Setup(__instance);
+        SortDropdown.Setup(__instance);
         AddSearchBar(__instance);
         AddStarSlider(__instance);
-        new Favorites().Setup(__instance);
+        Favorites.Setup(__instance);
     }
 
     private static void AddStarSlider(LevelSelectController __instance)

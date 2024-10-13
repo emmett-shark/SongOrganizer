@@ -13,6 +13,10 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.5.4
+- Include fonts instead of using all your computer's fonts
+- Add favorite button to score screen
+
 v1.5.3
 - Fix for TC 1.23
 

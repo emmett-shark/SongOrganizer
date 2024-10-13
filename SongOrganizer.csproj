@@ -3,7 +3,7 @@
     <TargetFramework>net48</TargetFramework>
     <AssemblyName>SongOrganizer</AssemblyName>
     <Description>Trombone Champ: Searching, Filtering, and Sorting</Description>
-    <Version>1.5.3</Version>
+    <Version>1.5.4</Version>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);CS1718</NoWarn>
@@ -16,7 +16,8 @@
     <PackageReference Include="TromboneChamp.BaboonAPI" Version="2.7.0-alpha.1" />
     <PackageReference Include="TromboneChamp.TrombLoader" Version="2.1.0" />
     <PackageReference Include="UnityEngine.Modules" Version="2019.3.11" IncludeAssets="compile" />
-    <Assets Include="Assets\*.*" />
+    <Assets Include="thunderstore\Assets\**" />
+    <Fonts Include="thunderstore\Fonts\**" />
     <Reference Include="TootTallyDiffCalcLibs">
       <HintPath>$(TromboneTootDir)\BepInEx\plugins\TootTally-TootTallyDiffCalcLibs\TootTallyDiffCalcLibs.dll</HintPath>
     </Reference>
@@ -29,16 +30,18 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TromboneTootDir)\BepInEx\plugins\emmett-SongOrganizer" />
     <Copy SourceFiles="@(Assets)" DestinationFolder="$(TromboneTootDir)\BepInEx\plugins\emmett-SongOrganizer\Assets" />
+    <Copy SourceFiles="@(Fonts)" DestinationFolder="$(TromboneTootDir)\BepInEx\plugins\emmett-SongOrganizer\Fonts" />
   </Target>
 
   <Target Name="ThunderstoreZip" AfterTargets="Build">
     <Delete Files="$(OutDir)thunderstore" />
     <Delete Files="$(SolutionDir)$(ProjectName).zip" />
-    <Copy SourceFiles="icon.png" DestinationFolder="$(OutDir)thunderstore" />
-    <Copy SourceFiles="manifest.json" DestinationFolder="$(OutDir)thunderstore" />
+    <Copy SourceFiles="thunderstore\icon.png" DestinationFolder="$(OutDir)thunderstore" />
+    <Copy SourceFiles="thunderstore\manifest.json" DestinationFolder="$(OutDir)thunderstore" />
     <Copy SourceFiles="README.md" DestinationFolder="$(OutDir)thunderstore" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(OutDir)thunderstore/plugins" />
     <Copy SourceFiles="@(Assets)" DestinationFolder="$(OutDir)thunderstore/plugins/Assets" />
+    <Copy SourceFiles="@(Fonts)" DestinationFolder="$(OutDir)thunderstore/plugins/Fonts" />
     <ZipDirectory DestinationFile="$(SolutionDir)$(ProjectName).zip" SourceDirectory="$(OutDir)thunderstore" />
   </Target>
 </Project>

@@ -10,7 +10,7 @@ namespace SongOrganizer.UI;
 
 public class SortDropdown : MonoBehaviour
 {
-    public void Setup(LevelSelectController __instance)
+    public static void Setup(LevelSelectController __instance)
     {
         var sortButton = __instance.sortbutton.GetComponent<Button>();
         var mainColor = OptionalTheme.colors.playButton.background;

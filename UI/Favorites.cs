@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +9,7 @@ namespace SongOrganizer.UI;
 //https://forum.unity.com/threads/ui-button-create-by-script-c.285829/ create unity ui element programatically without prefab
 public class Favorites : MonoBehaviour
 {
-    public void Setup(LevelSelectController __instance)
+    public static void Setup(LevelSelectController __instance)
     {
         var gameButtonsPanel = GameObject.Find(UnityPaths.GAME_BUTTONS_PANEL);
         for (int i = 0; i < 7; i++)
@@ -18,7 +17,32 @@ public class Favorites : MonoBehaviour
         ShowFavorites(__instance);
     }
 
-    private Button FavoriteButton(int i, Transform parent, LevelSelectController __instance)
+    public static void Setup(PointSceneController __instance)
+    {
+        var favButton = Instantiate(Plugin.Button, GameObject.Find("Canvas").transform);
+        favButton.name = $"favbutton";
+        favButton.GetComponentInChildren<Text>().text = "";
+        favButton.colors = Plugin.Options.ContainsFavorite(GlobalVariables.chosen_track) ? on : off;
+        favButton.onClick.AddListener(() =>
+        {
+            if (Plugin.Options.ContainsFavorite(GlobalVariables.chosen_track))
+            {
+                Plugin.Options.RemoveFavorite(GlobalVariables.chosen_track);
+                favButton.colors = off;
+            }
+            else
+            {
+                Plugin.Options.AddFavorite(GlobalVariables.chosen_track);
+                favButton.colors = on;
+            }
+        });
+        favButton.transform.SetAsLastSibling();
+        var image = favButton.GetComponent<Image>();
+        image.sprite = GetSprite($"{Path.GetDirectoryName(Plugin.Instance.Info.Location)}/Assets/white-heart.png");
+        image.rectTransform.sizeDelta = new Vector2(36, 36);
+    }
+
+    private static Button FavoriteButton(int i, Transform parent, LevelSelectController __instance)
     {
         var favButton = Instantiate(Plugin.Button, parent);
         favButton.name = $"favbutton{i}";
@@ -91,7 +115,7 @@ public class Favorites : MonoBehaviour
         colorMultiplier = 1,
     };
 
-    private Sprite GetSprite(string path)
+    private static Sprite GetSprite(string path)
     {
         var bytes = File.ReadAllBytes(path);
         var texture = new Texture2D(0, 0);

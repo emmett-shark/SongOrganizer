@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 namespace SongOrganizer.Patches;
@@ -73,10 +74,10 @@ public class HomeControllerStartPatch : MonoBehaviour
         _comfortaaTextPrefab.text = "DefaultText";
         _comfortaaTextPrefab.font = TMP_FontAsset.CreateFontAsset(gameObject2.GetComponent<Text>().font);
 
-        var start = DateTime.Now;
-        _comfortaaTextPrefab.font.fallbackFontAssetTable = Font.GetPathsToOSFonts()
+        var s = Stopwatch.StartNew();
+        _comfortaaTextPrefab.font.fallbackFontAssetTable = Directory.GetFiles($"{Path.GetDirectoryName(Plugin.Instance.Info.Location)}/Fonts")
             .Select(path => TMP_FontAsset.CreateFontAsset(new Font(path))).ToList();
-        Plugin.Log.LogInfo($"Loaded {_comfortaaTextPrefab.font.fallbackFontAssetTable.Count} fallback fonts in {DateTime.Now - start}");
+        Plugin.Log.LogInfo($"Loaded {_comfortaaTextPrefab.font.fallbackFontAssetTable.Count} fallback fonts in {s.Elapsed.TotalSeconds}s");
         _comfortaaTextPrefab.fontMaterial.SetFloat(ShaderUtilities.ID_FaceDilate, 0.25f);
         _comfortaaTextPrefab.fontMaterial.EnableKeyword(ShaderUtilities.Keyword_Outline);
         _comfortaaTextPrefab.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.25f);
