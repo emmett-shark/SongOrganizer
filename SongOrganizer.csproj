@@ -3,7 +3,7 @@
     <TargetFramework>net48</TargetFramework>
     <AssemblyName>SongOrganizer</AssemblyName>
     <Description>Trombone Champ: Searching, Filtering, and Sorting</Description>
-    <Version>1.5.4</Version>
+    <Version>1.5.5</Version>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);CS1718</NoWarn>
@@ -12,9 +12,9 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
-    <PackageReference Include="TromboneChamp.GameLibs" Version="1.20.0-beta" />
-    <PackageReference Include="TromboneChamp.BaboonAPI" Version="2.7.0-alpha.1" />
-    <PackageReference Include="TromboneChamp.TrombLoader" Version="2.1.0" />
+    <PackageReference Include="TromboneChamp.GameLibs" Version="1.25.0" />
+    <PackageReference Include="TromboneChamp.BaboonAPI" Version="2.8.1" />
+    <PackageReference Include="TromboneChamp.TrombLoader" Version="2.4.0" />
     <PackageReference Include="UnityEngine.Modules" Version="2019.3.11" IncludeAssets="compile" />
     <Assets Include="thunderstore\Assets\**" />
     <Fonts Include="thunderstore\Fonts\**" />

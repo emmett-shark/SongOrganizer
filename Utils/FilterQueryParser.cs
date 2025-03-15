@@ -12,8 +12,9 @@ public static class FilterQueryParser
             && ShowTrack(Plugin.Options.ShowSRank.Value, Plugin.Options.ShowNotSRank.Value, track.letterScore == "S")
             && ShowTrack(Plugin.Options.ShowRated.Value, Plugin.Options.ShowUnrated.Value, track.rated)
             && ShowTrack(Plugin.Options.MinStar.Value, Plugin.Options.MaxStar.Value, track.stars)
+            && ShowTrack(Plugin.Options.SearchValue.Value, track)
             && FilterFavorites(Plugin.Options.ShowOnlyFavorites.Value, track.trackref)
-            && ShowTrack(Plugin.Options.SearchValue.Value, track);
+            && track.collections.Contains(Plugin.Options.CollectionIndex.Value);
     }
 
     private static bool ShowTrack(bool optionToggle, bool oppositeOptionToggle, bool option) =>

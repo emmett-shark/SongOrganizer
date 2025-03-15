@@ -9,9 +9,11 @@ namespace SongOrganizer.UI;
 //https://forum.unity.com/threads/ui-button-create-by-script-c.285829/ create unity ui element programatically without prefab
 public class Favorites : MonoBehaviour
 {
+    public const string GAME_BUTTONS_PANEL = $"{UnityPaths.FULLSCREENPANEL}/GameButtonsPanel";
+
     public static void Setup(LevelSelectController __instance)
     {
-        var gameButtonsPanel = GameObject.Find(UnityPaths.GAME_BUTTONS_PANEL);
+        var gameButtonsPanel = GameObject.Find(GAME_BUTTONS_PANEL);
         for (int i = 0; i < 7; i++)
             Plugin.FavoriteButtons.Add(FavoriteButton(i, gameButtonsPanel.transform, __instance));
         ShowFavorites(__instance);

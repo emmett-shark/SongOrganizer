@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace SongOrganizer.Data;
 
 public class Track : SingleTrackData
@@ -6,6 +8,7 @@ public class Track : SingleTrackData
     public bool rated { get; set; }
     public string letterScore { get; set; }
     public int[] scores { get; set; }
+    public HashSet<int> collections { get; set; } = new();
     public float stars;
     public bool isFavorite { get; set; }
 

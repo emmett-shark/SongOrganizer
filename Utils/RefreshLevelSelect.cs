@@ -26,18 +26,19 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
 
     public void OnTracksLoaded(FSharpList<TromboneTrack> tracks)
     {
-        AddTracks(__instance.alltrackslist);
+        AddTracks();
         FilterTracks(__instance);
     }
 
-    private void AddTracks(List<SingleTrackData> singleTrackDatas)
+    private void AddTracks()
     {
         var start = DateTime.Now;
-        Plugin.Log.LogDebug($"Loading tracks: {singleTrackDatas.Count} total, {Plugin.StarDict.Count} star calcs");
+        var allTracks = GlobalVariables.all_track_collections.Last().all_tracks;
+        Plugin.Log.LogDebug($"Loading tracks: {allTracks.Count} total, {Plugin.StarDict.Count} star calcs");
 
-        CalculateRatedTracks(singleTrackDatas);
+        CalculateRatedTracks(allTracks.Select(i => i.trackref));
         Plugin.TrackDict.Clear();
-        singleTrackDatas.ForEach(track =>
+        allTracks.ForEach(track =>
         {
             bool isBaseGame = TrackLookup.lookup(track.trackref) is BaseGameTrack;
             track.difficulty = track.difficulty > 10 ? 10 : track.difficulty;
@@ -54,10 +55,15 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
             newTrack.isFavorite = Plugin.Options.ContainsFavorite(track.trackref);
             Plugin.TrackDict.TryAdd(track.trackref, newTrack);
         });
+        for (var i = 0; i < GlobalVariables.all_track_collections.Count; i++)
+        {
+            GlobalVariables.all_track_collections[i].all_tracks.ForEach(track =>
+                Plugin.TrackDict[track.trackref].collections.Add(i));
+        }
 
         var missingRatedTracks = ratedTracks.Where(track => !foundNoteHashes.Contains(track.note_hash) && !track.is_official).ToList();
         //missingRatedTracks.ForEach(track => Plugin.Log.LogDebug($"{track.short_name} {track.mirror}"));
-        Plugin.Log.LogDebug($"{missingRatedTracks.Count} / {Plugin.RatedTrackrefs.Count} rated tracks missing. Loading tracks elapsed: {DateTime.Now - start}");
+        Plugin.Log.LogDebug($"{missingRatedTracks.Count} / {Plugin.RatedTrackrefs.Count} rated tracks missing. Loading {Plugin.TrackDict.Count} tracks elapsed: {DateTime.Now - start}");
     }
 
     private static List<SearchTrackResult> ratedTracks;
@@ -65,7 +71,7 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
     private static ILookup<string, SearchTrackResult> ratedTrackNoteHashes;
     private static HashSet<string> ratedTrackRefs;
     private static ConcurrentBag<string> foundNoteHashes;
-    private static void CalculateRatedTracks(List<SingleTrackData> singleTrackDatas)
+    private static void CalculateRatedTracks(IEnumerable<string> trackrefs)
     {
         if (Plugin.RatedTrackrefs.Count > 0) return;
         try
@@ -77,9 +83,8 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
             ratedTrackFileHashes = ratedTracks.ToLookup(i => i.file_hash);
             ratedTrackNoteHashes = ratedTracks.ToLookup(i => i.note_hash);
             ratedTrackRefs = new HashSet<string>(ratedTracks.Select(i => i.track_ref));
-            Plugin.RatedTrackrefs = new ConcurrentBag<string>(singleTrackDatas.AsParallel()
+            Plugin.RatedTrackrefs = new ConcurrentBag<string>(trackrefs.AsParallel()
                 .WithDegreeOfParallelism(Plugin.MAX_PARALLELISM)
-                .Select(track => track.trackref)
                 .Where(trackref => IsRated(trackref))
                 .ToList());
         }
@@ -119,6 +124,7 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
 
     public static void FilterTracks(LevelSelectController __instance)
     {
+        __instance.alltrackslist = new List<SingleTrackData>(__instance.alltrackslist);
         List<string[]> newTracktitles = new List<string[]>();
         List<Track> newTrackData = new List<Track>();
         int newTrackIndex = 0;

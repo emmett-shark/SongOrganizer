@@ -19,6 +19,7 @@ public class Options
     public ConfigEntry<bool> ShowOnlyFavorites { get; set; }
     public ConfigEntry<string> Favorites { get; set; }
     public ConfigEntry<string> SortMode { get; set; }
+    public ConfigEntry<int> CollectionIndex { get; set; }
     public ConfigEntry<int> LastIndex { get; set; }
     public ConfigEntry<string> SearchValue { get; set; }
     public ConfigEntry<float> MinStar { get; set; }

@@ -22,7 +22,6 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
         if (anim)
         {
             __instance.clipPlayer.cancelCrossfades();
-            __instance.doSfx(__instance.sfx_click);
             __instance.closeSortDropdown();
             __instance.btnspanel.transform.localScale = new Vector3(1f / 1000f, 1f, 1f);
             LeanTween.scaleX(__instance.btnspanel, 1f, 0.2f).setEaseOutQuart();
@@ -126,14 +125,29 @@ public class LevelSelectControllerPlayPatch : MonoBehaviour
     static void Postfix() => Plugin.UnloadModule();
 }
 
+[HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.selectNewCollection))]
+public class LevelSelectControllerSelectNewCollectionPatch : MonoBehaviour
+{
+    static void Postfix(LevelSelectController __instance)
+    {
+        Plugin.Options.CollectionIndex.Value = GlobalVariables.chosen_collection_index;
+        RefreshLevelSelect.FilterTracks(__instance);
+    }
+}
+
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.Start))]
 public class LevelSelectControllerStartPatch : MonoBehaviour
 {
     static void Prefix()
     {
         GlobalVariables.sortmode = Plugin.Options.SortMode.Value;
+        GlobalVariables.chosen_collection_index = Plugin.Options.CollectionIndex.Value;
+        if (GlobalVariables.chosen_collection_index >= GlobalVariables.all_track_collections.Count)
+        {
+            GlobalVariables.chosen_collection_index = 0;
+        }
         GlobalVariables.levelselect_index = Plugin.Options.LastIndex.Value;
-        if (GlobalVariables.levelselect_index >= GlobalVariables.data_tracktitles.Length)
+        if (GlobalVariables.levelselect_index >= GlobalVariables.all_track_collections[GlobalVariables.chosen_collection_index].all_tracks.Count)
         {
             GlobalVariables.levelselect_index = 0;
         }
@@ -167,7 +181,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         description.GetComponent<RectTransform>().anchoredPosition = new Vector2(-207, 175);
 
         var doubleSlider = new DoubleSlider();
-        doubleSlider.Setup(__instance, fullscreenPanel.transform, new Vector2(-115, 176));
+        doubleSlider.Setup(__instance, fullscreenPanel.transform, new Vector2(-110, 176));
     }
 
     private static void AddSearchBar(LevelSelectController __instance)
@@ -192,9 +206,9 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
             RefreshLevelSelect.FilterTracks(__instance);
         });
 
-        Button deleteButton = AddDeleteButton(Plugin.SearchInput.textComponent);
-        deleteButton.name = "clear search";
-        deleteButton.onClick.AddListener(() => {
+        Button clearSearchButton = AddDeleteButton(Plugin.SearchInput.textComponent);
+        clearSearchButton.name = "clear search";
+        clearSearchButton.onClick.AddListener(() => {
             var selectedTrackref = __instance.alltrackslist[__instance.songindex].trackref;
             Plugin.SearchInput.text = "";
             Plugin.SearchInput.textComponent.text = "";

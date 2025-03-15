@@ -10,6 +10,12 @@ namespace SongOrganizer.UI;
 
 public class SortDropdown : MonoBehaviour
 {
+    public const string SORT_BUTTON_SHADOW_PATH = $"{UnityPaths.FULLSCREENPANEL}/sort_button/btn-shadow";
+    public const string SORT_DROPDOWN_PATH = $"{UnityPaths.FULLSCREENPANEL}/sort-dropdown";
+    public const string SORT_DROPDOWN_FACE_PATH = $"{SORT_DROPDOWN_PATH}/face";
+    public const string SORT_DROPDOWN_SHADOW_PATH = $"{SORT_DROPDOWN_PATH}/shadow";
+    public const string SORT_LENGTH_BUTTON_PATH = $"{SORT_DROPDOWN_FACE_PATH}/btn_sort_length";
+
     public static void Setup(LevelSelectController __instance)
     {
         var sortButton = __instance.sortbutton.GetComponent<Button>();
@@ -21,35 +27,41 @@ public class SortDropdown : MonoBehaviour
             pressedColor = new Color(mainColor.r + 0.6f, mainColor.g + 0.6f, mainColor.b + 0.6f),
             colorMultiplier = 1
         };
-
         __instance.sortlabel.color = OptionalTheme.colors.playButton.text;
         sortButton.transform.Find("arrow").GetComponent<Image>().color = __instance.sortlabel.color;
+        GameObject.Find(SORT_BUTTON_SHADOW_PATH).GetComponent<Image>().color = OptionalTheme.colors.playButton.shadow;
 
-        GameObject.Find(UnityPaths.SORT_BUTTON_SHADOW_PATH).GetComponent<Image>().color = OptionalTheme.colors.playButton.shadow;
-
-        GameObject sortDropdown = GameObject.Find(UnityPaths.SORT_DROPDOWN_PATH);
+        GameObject sortDropdown = GameObject.Find(SORT_DROPDOWN_PATH);
         sortDropdown.transform.SetAsLastSibling();
         sortDropdown.GetComponent<Image>().color = OptionalTheme.colors.playButton.shadow; // dropdown outline color
-        GameObject face = GameObject.Find(UnityPaths.SORT_DROPDOWN_FACE_PATH);
+        GameObject face = GameObject.Find(SORT_DROPDOWN_FACE_PATH);
         face.GetComponent<Image>().color = mainColor; // dropdown color
         foreach (var text in face.GetComponentsInChildren<Text>()) text.color = __instance.sortlabel.color;
-        RectTransform sortDropRectTransform = __instance.sortdrop.GetComponent<RectTransform>();
-        RectTransform faceRectTransform = face.GetComponent<RectTransform>();
-        CreateSortOption(__instance, face, "artist", -75);
-        CreateSortOption(__instance, face, "long name", -105);
-        int length = 460;
-        faceRectTransform.sizeDelta = new Vector2(180, length);
-        sortDropRectTransform.sizeDelta = new Vector2(180, length);
-        foreach (var filterOption in face.GetComponentsInChildren<Button>())
+        CreateSortOption(__instance, face, "artist", -86);
+        CreateSortOption(__instance, face, "long name", -108);
+        foreach (var sortOption in face.GetComponentsInChildren<Button>())
         {
-            var filterOptionRect = filterOption.GetComponent<RectTransform>();
-            filterOptionRect.anchoredPosition = new Vector2(filterOptionRect.anchoredPosition.x, filterOptionRect.anchoredPosition.y + 105);
+            sortOption.colors = new ColorBlock
+            {
+                normalColor = mainColor,
+                highlightedColor = new Color(mainColor.r + 0.3f, mainColor.g + 0.3f, mainColor.b + 0.3f),
+                pressedColor = mainColor,
+                colorMultiplier = 1
+            };
         }
 
-        int filterOffset = -180;
+        int length = 240;
+        var faceRectTransform = face.GetComponent<RectTransform>();
+        var shadowRectTransform = GameObject.Find(SORT_DROPDOWN_SHADOW_PATH).GetComponent<RectTransform>();
+        faceRectTransform.sizeDelta = new Vector2(0, length);
+        shadowRectTransform.sizeDelta = new Vector2(0, length);
+        faceRectTransform.anchoredPosition = new Vector2(0, -length / 2);
+        shadowRectTransform.anchoredPosition = new Vector2(5, -length / 2 - 5);
+
+        int filterOffset = -128;
         foreach (FilterOption filterOption in Enum.GetValues(typeof(FilterOption)))
         {
-            Toggle filter = CreateFilterOption(face, filterOption, new Vector2(242, filterOffset -= 30));
+            Toggle filter = CreateFilterOption(face, filterOption, new Vector2(234, filterOffset -= 24));
             ConfigEntry<bool> configEntry = GetConfigEntry(filterOption);
             if (configEntry == null) continue;
             filter.isOn = configEntry.Value;
@@ -58,11 +70,6 @@ public class SortDropdown : MonoBehaviour
                 configEntry.Value = b;
                 RefreshLevelSelect.FilterTracks(__instance);
             });
-        }
-        foreach (var button in face.GetComponentsInChildren<Button>())
-        {
-            RectTransform t = button.GetComponent<RectTransform>();
-            t.anchoredPosition = new Vector2(t.anchoredPosition.x, t.anchoredPosition.y + 60);
         }
     }
 
@@ -83,7 +90,7 @@ public class SortDropdown : MonoBehaviour
 
     private static void CreateSortOption(LevelSelectController __instance, GameObject face, string sortOption, float y)
     {
-        GameObject sortObject = GameObject.Find(UnityPaths.SORT_LENGTH_BUTTON_PATH);
+        GameObject sortObject = GameObject.Find(SORT_LENGTH_BUTTON_PATH);
         var sort = Instantiate(sortObject.GetComponent<Button>(), face.transform.transform);
         Destroy(sort.GetComponentInChildren<LocalizeStringEvent>());
         sort.name = sortOption;
@@ -108,15 +115,15 @@ public class SortDropdown : MonoBehaviour
 
         Text text = toggle.GetComponentInChildren<Text>();
         text.text = $"{name} tracks";
-        text.fontSize = 13;
+        text.fontSize = 11;
         text.color = OptionalTheme.colors.playButton.text;
 
         var background = toggle.transform.Find("Background").GetComponent<Image>();
         background.rectTransform.sizeDelta = new Vector2(0, 0);
 
         var checkmark = toggle.transform.Find("Background/Checkmark").GetComponent<Image>();
-        checkmark.rectTransform.anchoredPosition = new Vector2(-70, 20);
-        checkmark.rectTransform.sizeDelta = new Vector2(20, 20);
+        checkmark.rectTransform.anchoredPosition = new Vector2(-85, 20);
+        checkmark.rectTransform.sizeDelta = new Vector2(15, 15);
 
         var label = toggle.GetComponentInChildren<Text>();
         label.rectTransform.sizeDelta = new Vector2(180, label.rectTransform.sizeDelta.y);

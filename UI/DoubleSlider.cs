@@ -57,6 +57,9 @@ public class DoubleSlider : MonoBehaviour
         starSlider.maxValue = Plugin.MAX_STARS;
         starSlider.value = entry.Value;
         handle.gameObject.GetComponent<Image>().color = OptionalTheme.colors.scrollSpeedSlider.handle;
+        handle.GetComponent<RectTransform>().sizeDelta = new Vector2(18, 3);
+        starSlider.transform.Find(FILL_AREA_PATH).GetComponent<RectTransform>().sizeDelta = new Vector2(-10, 0);
+        starSlider.transform.Find(BACKGROUND_PATH).GetComponent<RectTransform>().sizeDelta = new Vector2(2, 2);
 
         starSlider.onValueChanged.AddListener(value =>
         {
