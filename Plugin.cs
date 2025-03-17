@@ -67,7 +67,7 @@ public class Plugin : BaseUnityPlugin
             Favorites = Config.Bind(FILTER_SECTION, nameof(Options.Favorites), ""),
             SortMode = Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
             LastIndex = Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
-            CollectionIndex = Config.Bind(INDEX_SECTION, nameof(Options.CollectionIndex), 0),
+            CollectionIndex = Config.Bind(INDEX_SECTION, nameof(Options.CollectionIndex), 4),
             SearchValue = Config.Bind(SEARCH_SECTION, nameof(Options.SearchValue), ""),
             MinStar = Config.Bind(SEARCH_SECTION, nameof(Options.MinStar), 0f),
             MaxStar = Config.Bind(SEARCH_SECTION, nameof(Options.MaxStar), 11f),

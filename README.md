@@ -13,6 +13,9 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.5.6
+- Change collection index to be "all collections" by default
+
 v1.5.5
 - Fix for TC 1.25
 
