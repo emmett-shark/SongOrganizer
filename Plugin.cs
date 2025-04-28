@@ -35,7 +35,7 @@ public class Plugin : BaseUnityPlugin
     public static TMP_InputField SearchInput;
     public static List<Button> FavoriteButtons = new();
 
-    public static ConcurrentDictionary<string, Track> TrackDict = new();
+    public static Dictionary<string, Track> TrackDict = new();
     public static ConcurrentDictionary<string, float> StarDict = new();
     public static ConcurrentBag<string> RatedTrackrefs = new();
     public static List<SearchTrackResult> RatedTracksPaged = new();
