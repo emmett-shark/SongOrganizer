@@ -33,7 +33,7 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
     private void AddTracks()
     {
         var start = DateTime.Now;
-        var allTracks = GlobalVariables.all_track_collections.Last().all_tracks;
+        var allTracks = GlobalVariables.all_track_collections.Find(coll => coll._unique_id == "all").all_tracks;
         Plugin.Log.LogDebug($"Loading tracks: {allTracks.Count} total, {Plugin.StarDict.Count} star calcs");
 
         CalculateRatedTracks(allTracks.Select(i => i.trackref));
