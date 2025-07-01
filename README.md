@@ -13,6 +13,10 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.5.8
+- Fixed a sometimes bug, maybe
+- Added HideHearts in the config
+
 v1.5.7
 - Change main track dictionary to non concurrent
 

@@ -1,7 +1,7 @@
 {
     "name": "SongOrganizer",
     "description": "Trombone Champ Searching, Filtering, and Sorting",
-    "version_number": "1.5.7",
+    "version_number": "1.5.8",
     "dependencies": [
       "BepInEx-BepInExPack_TromboneChamp-5.4.21",
       "TromboneChamps-BaboonAPI-2.5.0",

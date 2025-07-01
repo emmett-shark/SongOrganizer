@@ -13,6 +13,7 @@ public class Favorites : MonoBehaviour
 
     public static void Setup(LevelSelectController __instance)
     {
+        if (Plugin.Options.HideHearts.Value) return;
         var gameButtonsPanel = GameObject.Find(GAME_BUTTONS_PANEL);
         for (int i = 0; i < 7; i++)
             Plugin.FavoriteButtons.Add(FavoriteButton(i, gameButtonsPanel.transform, __instance));
@@ -21,6 +22,7 @@ public class Favorites : MonoBehaviour
 
     public static void Setup(PointSceneController __instance)
     {
+        if (Plugin.Options.HideHearts.Value) return;
         var favButton = Instantiate(Plugin.Button, GameObject.Find("Canvas").transform);
         favButton.name = $"favbutton";
         favButton.GetComponentInChildren<Text>().text = "";

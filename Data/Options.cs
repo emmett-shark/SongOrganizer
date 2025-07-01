@@ -17,6 +17,7 @@ public class Options
     public ConfigEntry<bool> ShowUnrated { get; set; }
     public ConfigEntry<bool> ShowRated { get; set; }
     public ConfigEntry<bool> ShowOnlyFavorites { get; set; }
+    public ConfigEntry<bool> HideHearts { get; set; }
     public ConfigEntry<string> Favorites { get; set; }
     public ConfigEntry<string> SortMode { get; set; }
     public ConfigEntry<int> CollectionIndex { get; set; }
