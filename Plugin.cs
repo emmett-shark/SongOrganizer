@@ -48,6 +48,7 @@ public class Plugin : BaseUnityPlugin
     private const string SORT_SECTION = "Sort";
     private const string INDEX_SECTION = "Index";
     private const string SEARCH_SECTION = "Search";
+    private const string KEYBINDS_SECTION = "Keybinds";
 
     private void Awake()
     {
@@ -71,10 +72,12 @@ public class Plugin : BaseUnityPlugin
 
             LastIndex = Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
             CollectionIndex = Config.Bind(INDEX_SECTION, nameof(Options.CollectionIndex), 4),
-            
+
             SearchValue = Config.Bind(SEARCH_SECTION, nameof(Options.SearchValue), ""),
             MinStar = Config.Bind(SEARCH_SECTION, nameof(Options.MinStar), 0f),
             MaxStar = Config.Bind(SEARCH_SECTION, nameof(Options.MaxStar), 11f),
+
+            ClearSearchKey = Config.Bind(KEYBINDS_SECTION, nameof(Options.ClearSearchKey), KeyCode.F8),
         };
         Options.SetFavorites();
         TrackCalculation.CalculateStars();

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using BaboonAPI.Hooks.Tracks;
 using HarmonyLib;
 using SongOrganizer.Data;
@@ -11,9 +10,53 @@ using UnityEngine.UI;
 
 namespace SongOrganizer.Patches;
 
+public class LevelSelectUtils
+{
+    public static void ClearSearch(string selectedTrackref, LevelSelectController __instance)
+    {
+        Plugin.SearchInput.text = "";
+        Plugin.SearchInput.textComponent.text = "";
+        RefreshLevelSelect.FilterTracks(__instance);
+        GlobalVariables.levelselect_index = __instance.alltrackslist.FindIndex(track => track.trackref == selectedTrackref);
+        GlobalVariables.levelselect_index = GlobalVariables.levelselect_index == -1 ? 0 : GlobalVariables.levelselect_index;
+        __instance.sortTracks(GlobalVariables.sortmode, false);
+    }
+}
+
 [HarmonyPatch(typeof(LevelSelectController), nameof(LevelSelectController.sortTracks))]
 public class LevelSelectControllerSortTracksPatch : MonoBehaviour
 {
+    public static int CompareDifficultyToottally(Track t1, Track t2)
+    {
+        var diff = t1.stars.CompareTo(t2.stars);
+        if (diff != 0) return diff;
+        return CompareShortName(t1, t2);
+    }
+
+    public static int CompareDifficultyDefault(SingleTrackData t1, SingleTrackData t2)
+    {
+        var diff = t1.difficulty.CompareTo(t2.difficulty);
+        if (diff != 0) return diff;
+        return CompareShortName(t1, t2);
+    }
+
+    public static int CompareLength(SingleTrackData t1, SingleTrackData t2)
+    {
+        var diff = t1.length.CompareTo(t2.length);
+        if (diff != 0) return diff;
+        return CompareShortName(t1, t2);
+    }
+
+    public static int CompareArtist(SingleTrackData t1, SingleTrackData t2)
+    {
+        var diff = t1.artist == null ? -1 : t1.artist.Trim().CompareTo(t2.artist.Trim());
+        if (diff != 0) return diff;
+        return CompareShortName(t1, t2);
+    }
+
+    public static int CompareShortName(SingleTrackData t1, SingleTrackData t2) =>
+        t1.trackname_short == null ? -1 : t1.trackname_short.Trim().CompareTo(t2.trackname_short.Trim());
+
     static bool Prefix(LevelSelectController __instance, string sortcriteria, bool anim)
     {
         Plugin.Options.SortMode.Value = sortcriteria;
@@ -29,17 +72,17 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
         if (sortcriteria == "default")
             __instance.alltrackslist.Sort((t1, t2) => t1.sort_order.CompareTo(t2.sort_order));
         else if (sortcriteria == "difficulty" && __instance.alltrackslist.TrueForAll(track => track is Track))
-            __instance.alltrackslist.Sort((t1, t2) => ((Track)t1).stars.CompareTo(((Track)t2).stars));
+            __instance.alltrackslist.Sort((t1, t2) => CompareDifficultyToottally((Track)t1, (Track)t2));
         else if (sortcriteria == "difficulty")
-            __instance.alltrackslist.Sort((t1, t2) => t1.difficulty.CompareTo(t2.difficulty));
+            __instance.alltrackslist.Sort((t1, t2) => CompareDifficultyDefault(t1, t2));
         else if (sortcriteria == "alpha")
-            __instance.alltrackslist.Sort((t1, t2) => t1.trackname_short == null ? -1 : t1.trackname_short.Trim().CompareTo(t2.trackname_short.Trim()));
+            __instance.alltrackslist.Sort((t1, t2) => CompareShortName(t1, t2));
         else if (sortcriteria == "long name")
             __instance.alltrackslist.Sort((t1, t2) => t1.trackname_long == null ? -1 : t1.trackname_long.Trim().CompareTo(t2.trackname_long.Trim()));
         else if (sortcriteria == "length")
-            __instance.alltrackslist.Sort((t1, t2) => t1.length.CompareTo(t2.length));
+            __instance.alltrackslist.Sort((t1, t2) => CompareLength(t1, t2));
         else if (sortcriteria == "artist")
-            __instance.alltrackslist.Sort((t1, t2) => t1.artist == null ? -1 : t1.artist.Trim().CompareTo(t2.artist.Trim()));
+            __instance.alltrackslist.Sort((t1, t2) => CompareArtist(t1, t2));
         __instance.songindex = !anim ? GlobalVariables.levelselect_index : 0;
         __instance.populateSongNames(true);
         return false;
@@ -88,6 +131,14 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
         if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.F))
         {
             Plugin.SearchInput.Select();
+        }
+        else if (!Plugin.SearchInput.isFocused && Input.GetKey(Plugin.Options.ClearSearchKey.Value)) {
+            var selectedTrackref = __instance.alltrackslist[__instance.songindex].trackref;
+            Plugin.Options.ClearFilters();
+            DoubleSlider.minSlider.value = 0;
+            DoubleSlider.maxSlider.value = 11f;
+            SortDropdown.Toggles.ForEach(i => i.isOn = false);
+            LevelSelectUtils.ClearSearch(selectedTrackref, __instance);
         }
         else if (!Plugin.SearchInput.isFocused && Input.anyKeyDown && Input.inputString.Length > 0)
         {
@@ -180,8 +231,7 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         description.color = OptionalTheme.colors.songName;
         description.GetComponent<RectTransform>().anchoredPosition = new Vector2(-207, 175);
 
-        var doubleSlider = new DoubleSlider();
-        doubleSlider.Setup(__instance, fullscreenPanel.transform, new Vector2(-110, 176));
+        DoubleSlider.Setup(__instance, fullscreenPanel.transform, new Vector2(-110, 176));
     }
 
     private static void AddSearchBar(LevelSelectController __instance)
@@ -209,14 +259,9 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         Button clearSearchButton = AddDeleteButton(Plugin.SearchInput.textComponent);
         clearSearchButton.name = "clear search";
         clearSearchButton.onClick.AddListener(() => {
-            var selectedTrackref = __instance.alltrackslist[__instance.songindex].trackref;
-            Plugin.SearchInput.text = "";
-            Plugin.SearchInput.textComponent.text = "";
             Plugin.Options.SearchValue.Value = "";
-            RefreshLevelSelect.FilterTracks(__instance);
-            GlobalVariables.levelselect_index = __instance.alltrackslist.FindIndex(track => track.trackref == selectedTrackref);
-            GlobalVariables.levelselect_index = GlobalVariables.levelselect_index == -1 ? 0 : GlobalVariables.levelselect_index;
-            __instance.sortTracks(GlobalVariables.sortmode, false);
+            var selectedTrackref = __instance.alltrackslist[__instance.songindex].trackref;
+            LevelSelectUtils.ClearSearch(selectedTrackref, __instance);
         });
     }
 

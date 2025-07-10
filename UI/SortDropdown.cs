@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using BepInEx.Configuration;
 using SongOrganizer.Data;
 using SongOrganizer.Utils;
@@ -10,6 +11,8 @@ namespace SongOrganizer.UI;
 
 public class SortDropdown : MonoBehaviour
 {
+    public static List<Toggle> Toggles = new();
+
     public const string SORT_BUTTON_SHADOW_PATH = $"{UnityPaths.FULLSCREENPANEL}/sort_button/btn-shadow";
     public const string SORT_DROPDOWN_PATH = $"{UnityPaths.FULLSCREENPANEL}/sort-dropdown";
     public const string SORT_DROPDOWN_FACE_PATH = $"{SORT_DROPDOWN_PATH}/face";
@@ -70,6 +73,7 @@ public class SortDropdown : MonoBehaviour
                 configEntry.Value = b;
                 RefreshLevelSelect.FilterTracks(__instance);
             });
+            Toggles.Add(filter);
         }
     }
 

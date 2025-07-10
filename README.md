@@ -8,11 +8,16 @@
 - Save your sort, filter, last song index to `<R2modmanProfileFolder>/BepInEx/config/SongOrganizer.cfg`
 - Search by first letter: typing a character (A-Z, 0-9) in track select will hop to the next track whose short name starts with that character
 - Calculate difficulty of all tracks if TootTallyDiffCalcLibs exists
+- Press F8 to clear search (configurable)
 
 ## Usage
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.6.0
+- Add keybind to clear search (F8 by default, configurable)
+- There could be multiple songs with the same difficulty, length, or artist, so if sorting by those fields, it will additionally by sort by short name
+
 v1.5.8
 - Fixed a sometimes bug, maybe
 - Added HideHearts in the config

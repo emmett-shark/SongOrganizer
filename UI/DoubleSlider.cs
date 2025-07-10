@@ -8,15 +8,15 @@ namespace SongOrganizer.UI;
 
 public class DoubleSlider : MonoBehaviour
 {
-    private Slider minSlider;
-    private Slider maxSlider;
+    public static Slider minSlider;
+    public static Slider maxSlider;
 
     private const string HANDLE_PATH = "Handle Slide Area/Handle";
     private const string FILL_AREA_PATH = "Fill Area";
     private const string FILL_PATH = "Fill Area/Fill";
     private const string BACKGROUND_PATH = "Background";
 
-    public void Setup(LevelSelectController __instance, Transform transform, Vector2 position)
+    public static void Setup(LevelSelectController __instance, Transform transform, Vector2 position)
     {
         maxSlider = CreateSlider(__instance, transform, position, Plugin.Options.MaxStar, ChangeMaxSlider);
         maxSlider.transform.Find(FILL_PATH).GetComponent<Image>().color = OptionalTheme.colors.scrollSpeedSlider.fill;
@@ -30,17 +30,17 @@ public class DoubleSlider : MonoBehaviour
         EmptyMinSlider();
     }
 
-    private void ChangeMinSlider(float value)
+    private static void ChangeMinSlider(float value)
     {
         if (maxSlider.value <= value) maxSlider.value = value + 1;
     }
 
-    private void ChangeMaxSlider(float value)
+    private static void ChangeMaxSlider(float value)
     {
         if (minSlider.value >= value) minSlider.value = value - 1;
     }
 
-    public Slider CreateSlider(LevelSelectController __instance, Transform transform, Vector2 position, ConfigEntry<float> entry, Action<float> action)
+    public static Slider CreateSlider(LevelSelectController __instance, Transform transform, Vector2 position, ConfigEntry<float> entry, Action<float> action)
     {
         var starSlider = Instantiate(__instance.gamespeedslider, transform);
 
@@ -73,12 +73,12 @@ public class DoubleSlider : MonoBehaviour
         return starSlider;
     }
 
-    private void SetLabel(Text label, float value)
+    private static void SetLabel(Text label, float value)
     {
         label.text = value == Plugin.MAX_STARS ? "∞" : value.ToString();
     }
 
-    private void EmptyMinSlider()
+    private static void EmptyMinSlider()
     {
         var fillRect = maxSlider.transform.Find(FILL_PATH).gameObject.GetComponent<RectTransform>();
         fillRect.anchorMin = new Vector2(Plugin.Options.MinStar.Value / Plugin.MAX_STARS, fillRect.anchorMin.y);
