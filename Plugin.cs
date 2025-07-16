@@ -40,7 +40,6 @@ public class Plugin : BaseUnityPlugin
     public static ConcurrentBag<string> RatedTrackrefs = new();
     public static List<SearchTrackResult> RatedTracksPaged = new();
     public const int TRACK_SCORE_LENGTH = 5;
-    public const int MAX_STARS = 11;
     public const int MAX_PARALLELISM = 8;
 
     public static readonly string RatedTracksPath = $"{Paths.ConfigPath}/rated.json";
@@ -48,6 +47,7 @@ public class Plugin : BaseUnityPlugin
     private const string SORT_SECTION = "Sort";
     private const string INDEX_SECTION = "Index";
     private const string SEARCH_SECTION = "Search";
+    private const string CONFIG_SECTION = "Config";
     private const string KEYBINDS_SECTION = "Keybinds";
 
     private void Awake()
@@ -56,6 +56,8 @@ public class Plugin : BaseUnityPlugin
         Log = Logger;
         Options = new Options
         {
+            MaxStarSlider = Config.Bind(CONFIG_SECTION, nameof(Options.MaxStarSlider), 10),
+
             ShowDefault = Config.Bind(FILTER_SECTION, nameof(Options.ShowDefault), false),
             ShowCustom = Config.Bind(FILTER_SECTION, nameof(Options.ShowCustom), false),
             ShowUnplayed = Config.Bind(FILTER_SECTION, nameof(Options.ShowUnplayed), false),
@@ -68,16 +70,16 @@ public class Plugin : BaseUnityPlugin
             Favorites = Config.Bind(FILTER_SECTION, nameof(Options.Favorites), ""),
             HideHearts = Config.Bind(FILTER_SECTION, nameof(Options.HideHearts), false),
 
-            SortMode = Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
-
             LastIndex = Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
             CollectionIndex = Config.Bind(INDEX_SECTION, nameof(Options.CollectionIndex), 4),
+
+            ClearSearchKey = Config.Bind(KEYBINDS_SECTION, nameof(Options.ClearSearchKey), KeyCode.F8),
 
             SearchValue = Config.Bind(SEARCH_SECTION, nameof(Options.SearchValue), ""),
             MinStar = Config.Bind(SEARCH_SECTION, nameof(Options.MinStar), 0f),
             MaxStar = Config.Bind(SEARCH_SECTION, nameof(Options.MaxStar), 11f),
 
-            ClearSearchKey = Config.Bind(KEYBINDS_SECTION, nameof(Options.ClearSearchKey), KeyCode.F8),
+            SortMode = Config.Bind(SORT_SECTION, nameof(Options.SortMode), "default"),
         };
         Options.SetFavorites();
         TrackCalculation.CalculateStars();

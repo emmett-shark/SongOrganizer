@@ -31,6 +31,7 @@ public class Options
     public ConfigEntry<float> MaxStar { get; set; }
 
     public ConfigEntry<KeyCode> ClearSearchKey { get; set; }
+    public ConfigEntry<int> MaxStarSlider { get; set; }
 
     private SortedSet<string> FavoriteTrackrefs { get; set; }
 
@@ -38,7 +39,7 @@ public class Options
     {
         FavoriteTrackrefs = new SortedSet<string>();
         if (!Favorites.Value.IsNullOrWhiteSpace())
-            FavoriteTrackrefs = new SortedSet<string>(Favorites.Value.Split(DELIMETER));
+            FavoriteTrackrefs = [.. Favorites.Value.Split(DELIMETER)];
     }
 
     public bool ContainsFavorite(string trackref) => FavoriteTrackrefs.Contains(trackref);
@@ -68,6 +69,6 @@ public class Options
         ShowOnlyFavorites.Value = false;
         SearchValue.Value = "";
         MinStar.Value = 0;
-        MaxStar.Value = 11;
+        MaxStar.Value = Plugin.Options.MaxStarSlider.Value + 1;
     }
 }

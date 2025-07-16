@@ -14,6 +14,9 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.6.1
+- Add MaxStarSlider config option for the difficulty slider
+
 v1.6.0
 - Add keybind to clear search (F8 by default, configurable)
 - There could be multiple songs with the same difficulty, length, or artist, so if sorting by those fields, it will additionally by sort by short name

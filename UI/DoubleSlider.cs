@@ -18,6 +18,9 @@ public class DoubleSlider : MonoBehaviour
 
     public static void Setup(LevelSelectController __instance, Transform transform, Vector2 position)
     {
+        Plugin.Options.MaxStar.Value = Math.Min(Plugin.Options.MaxStar.Value, Plugin.Options.MaxStarSlider.Value + 1);
+        Plugin.Options.MinStar.Value = Math.Min(Plugin.Options.MinStar.Value, Plugin.Options.MaxStarSlider.Value + 1);
+
         maxSlider = CreateSlider(__instance, transform, position, Plugin.Options.MaxStar, ChangeMaxSlider);
         maxSlider.transform.Find(FILL_PATH).GetComponent<Image>().color = OptionalTheme.colors.scrollSpeedSlider.fill;
         maxSlider.transform.Find(BACKGROUND_PATH).GetComponent<Image>().color = OptionalTheme.colors.scrollSpeedSlider.background;
@@ -54,7 +57,7 @@ public class DoubleSlider : MonoBehaviour
         starSlider.GetComponent<RectTransform>().anchoredPosition = position;
         starSlider.wholeNumbers = true;
         starSlider.minValue = 0;
-        starSlider.maxValue = Plugin.MAX_STARS;
+        starSlider.maxValue = Plugin.Options.MaxStarSlider.Value + 1;
         starSlider.value = entry.Value;
         handle.gameObject.GetComponent<Image>().color = OptionalTheme.colors.scrollSpeedSlider.handle;
         handle.GetComponent<RectTransform>().sizeDelta = new Vector2(18, 3);
@@ -75,12 +78,12 @@ public class DoubleSlider : MonoBehaviour
 
     private static void SetLabel(Text label, float value)
     {
-        label.text = value == Plugin.MAX_STARS ? "∞" : value.ToString();
+        label.text = value == Plugin.Options.MaxStarSlider.Value + 1 ? "∞" : value.ToString();
     }
 
     private static void EmptyMinSlider()
     {
         var fillRect = maxSlider.transform.Find(FILL_PATH).gameObject.GetComponent<RectTransform>();
-        fillRect.anchorMin = new Vector2(Plugin.Options.MinStar.Value / Plugin.MAX_STARS, fillRect.anchorMin.y);
+        fillRect.anchorMin = new Vector2(Plugin.Options.MinStar.Value / (Plugin.Options.MaxStarSlider.Value + 1), fillRect.anchorMin.y);
     }
 }

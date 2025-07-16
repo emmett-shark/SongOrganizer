@@ -136,7 +136,7 @@ public class LevelSelectControllerUpdatePatch : MonoBehaviour
             var selectedTrackref = __instance.alltrackslist[__instance.songindex].trackref;
             Plugin.Options.ClearFilters();
             DoubleSlider.minSlider.value = 0;
-            DoubleSlider.maxSlider.value = 11f;
+            DoubleSlider.maxSlider.value = Plugin.Options.MaxStarSlider.Value + 1;
             SortDropdown.Toggles.ForEach(i => i.isOn = false);
             LevelSelectUtils.ClearSearch(selectedTrackref, __instance);
         }

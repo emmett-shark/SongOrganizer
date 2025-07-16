@@ -22,7 +22,7 @@ public static class FilterQueryParser
 
     // stars != stars is intentional because it's sometimes NaN
     private static bool ShowTrack(float minStar, float maxStar, float stars) =>
-        (maxStar >= Plugin.MAX_STARS && stars != stars) || (stars > minStar && (maxStar >= Plugin.MAX_STARS || stars <= maxStar));
+        (maxStar > Plugin.Options.MaxStarSlider.Value && stars != stars) || (stars > minStar && (maxStar > Plugin.Options.MaxStarSlider.Value || stars <= maxStar));
 
     private static bool FilterFavorites(bool onlyFavorites, string trackRef) =>
         !onlyFavorites || (onlyFavorites && Plugin.Options.ContainsFavorite(trackRef));

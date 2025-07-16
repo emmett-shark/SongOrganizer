@@ -82,11 +82,11 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
             foundNoteHashes = new();
             ratedTrackFileHashes = ratedTracks.ToLookup(i => i.file_hash);
             ratedTrackNoteHashes = ratedTracks.ToLookup(i => i.note_hash);
-            ratedTrackRefs = new HashSet<string>(ratedTracks.Select(i => i.track_ref));
-            Plugin.RatedTrackrefs = new ConcurrentBag<string>(trackrefs.AsParallel()
+            ratedTrackRefs = [.. ratedTracks.Select(i => i.track_ref)];
+            Plugin.RatedTrackrefs = [.. trackrefs.AsParallel()
                 .WithDegreeOfParallelism(Plugin.MAX_PARALLELISM)
                 .Where(trackref => IsRated(trackref))
-                .ToList());
+                .ToList()];
         }
         catch (Exception e)
         {
@@ -124,7 +124,7 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
 
     public static void FilterTracks(LevelSelectController __instance)
     {
-        __instance.alltrackslist = new List<SingleTrackData>(__instance.alltrackslist);
+        __instance.alltrackslist = [.. __instance.alltrackslist];
         List<string[]> newTracktitles = new List<string[]>();
         List<Track> newTrackData = new List<Track>();
         int newTrackIndex = 0;
@@ -132,7 +132,7 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
         {
             if (!FilterQueryParser.ShowTrack(track)) continue;
             track.trackindex = newTrackIndex;
-            newTracktitles.Add(new string[] {
+            newTracktitles.Add([
                 track.trackname_long,
                 track.trackname_short,
                 track.trackref,
@@ -143,7 +143,7 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
                 track.difficulty.ToString(),
                 track.length.ToString(),
                 track.tempo.ToString()
-            });
+            ]);
             newTrackData.Add(track);
             newTrackIndex++;
         }
