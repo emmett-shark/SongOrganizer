@@ -33,7 +33,8 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
     private void AddTracks()
     {
         var start = DateTime.Now;
-        var allTracks = GlobalVariables.all_track_collections.Find(coll => coll._unique_id == "all").all_tracks;
+        var allTrackCollection = GlobalVariables.all_track_collections.Find(coll => coll._unique_id == "all");
+        var allTracks = allTrackCollection.all_tracks;
         Plugin.Log.LogDebug($"Loading tracks: {allTracks.Count} total, {Plugin.StarDict.Count} star calcs");
 
         CalculateRatedTracks(allTracks.Select(i => i.trackref));
@@ -53,12 +54,19 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
             newTrack.letterScore = scores != null ? scores.Value.highestRank : "-";
             newTrack.scores = scores != null ? scores.Value.highScores.ToArray() : new int[Plugin.TRACK_SCORE_LENGTH];
             newTrack.isFavorite = Plugin.Options.ContainsFavorite(track.trackref);
+            newTrack.collections.Add(allTrackCollection._index);
+            newTrack.json_format = track.json_format;
+            newTrack.track_folder = track.track_folder;
             Plugin.TrackDict.TryAdd(track.trackref, newTrack);
         });
+        Plugin.Log.LogDebug($"Adding collections: {string.Join(", ", GlobalVariables.all_track_collections.Select(i => i._unique_id))}");
         for (var i = 0; i < GlobalVariables.all_track_collections.Count; i++)
         {
             GlobalVariables.all_track_collections[i].all_tracks.ForEach(track =>
-                Plugin.TrackDict[track.trackref].collections.Add(i));
+            {
+                if (Plugin.TrackDict.ContainsKey(track.trackref))
+                    Plugin.TrackDict[track.trackref].collections.Add(i);
+            });
         }
 
         var missingRatedTracks = ratedTracks.Where(track => !foundNoteHashes.Contains(track.note_hash) && !track.is_official).ToList();
