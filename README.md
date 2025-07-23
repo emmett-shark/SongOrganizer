@@ -14,6 +14,10 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.6.2
+- Fix a sometimes bug, maybe
+- Unhide the base game delete button
+
 v1.6.1
 - Add MaxStarSlider config option for the difficulty slider
 
