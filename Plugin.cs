@@ -71,7 +71,7 @@ public class Plugin : BaseUnityPlugin
             HideHearts = Config.Bind(FILTER_SECTION, nameof(Options.HideHearts), false),
 
             LastIndex = Config.Bind(INDEX_SECTION, nameof(Options.LastIndex), 0),
-            CollectionIndex = Config.Bind(INDEX_SECTION, nameof(Options.CollectionIndex), 4),
+            CollectionIndex = Config.Bind(INDEX_SECTION, nameof(Options.CollectionIndex), 0),
 
             ClearSearchKey = Config.Bind(KEYBINDS_SECTION, nameof(Options.ClearSearchKey), KeyCode.F8),
 
