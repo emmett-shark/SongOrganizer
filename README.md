@@ -14,6 +14,9 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.6.4
+- Add "Modified Date" sort
+
 v1.6.3
 - Change default collection index to 0 since baboon put "all" there
 

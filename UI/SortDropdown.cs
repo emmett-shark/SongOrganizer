@@ -42,6 +42,7 @@ public class SortDropdown : MonoBehaviour
         foreach (var text in face.GetComponentsInChildren<Text>()) text.color = __instance.sortlabel.color;
         CreateSortOption(__instance, face, "artist", -86);
         CreateSortOption(__instance, face, "long name", -108);
+        CreateSortOption(__instance, face, "modified date", -130);
         foreach (var sortOption in face.GetComponentsInChildren<Button>())
         {
             sortOption.colors = new ColorBlock
@@ -53,7 +54,7 @@ public class SortDropdown : MonoBehaviour
             };
         }
 
-        int length = 240;
+        int length = 260;
         var faceRectTransform = face.GetComponent<RectTransform>();
         var shadowRectTransform = GameObject.Find(SORT_DROPDOWN_SHADOW_PATH).GetComponent<RectTransform>();
         faceRectTransform.sizeDelta = new Vector2(0, length);
@@ -61,7 +62,7 @@ public class SortDropdown : MonoBehaviour
         faceRectTransform.anchoredPosition = new Vector2(0, -length / 2);
         shadowRectTransform.anchoredPosition = new Vector2(5, -length / 2 - 5);
 
-        int filterOffset = -128;
+        int filterOffset = -150;
         foreach (FilterOption filterOption in Enum.GetValues(typeof(FilterOption)))
         {
             Toggle filter = CreateFilterOption(face, filterOption, new Vector2(234, filterOffset -= 24));

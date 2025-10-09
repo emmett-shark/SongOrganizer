@@ -54,6 +54,14 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
         return CompareShortName(t1, t2);
     }
 
+    public static int CompareModifiedDate(SingleTrackData t1, SingleTrackData t2)
+    {
+        if (t1 is not Track || t2 is not Track) return CompareShortName(t1, t2);
+        var diff = ((Track)t1).modifiedDate == null ? -1 : ((Track)t1).modifiedDate.CompareTo(((Track)t2).modifiedDate);
+        if (diff != 0) return diff;
+        return CompareShortName(t1, t2);
+    }
+
     public static int CompareShortName(SingleTrackData t1, SingleTrackData t2) =>
         t1.trackname_short == null ? -1 : t1.trackname_short.Trim().CompareTo(t2.trackname_short.Trim());
 
@@ -74,15 +82,17 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
         else if (sortcriteria == "difficulty" && __instance.alltrackslist.TrueForAll(track => track is Track))
             __instance.alltrackslist.Sort((t1, t2) => CompareDifficultyToottally((Track)t1, (Track)t2));
         else if (sortcriteria == "difficulty")
-            __instance.alltrackslist.Sort((t1, t2) => CompareDifficultyDefault(t1, t2));
+            __instance.alltrackslist.Sort(CompareDifficultyDefault);
         else if (sortcriteria == "alpha")
-            __instance.alltrackslist.Sort((t1, t2) => CompareShortName(t1, t2));
+            __instance.alltrackslist.Sort(CompareShortName);
         else if (sortcriteria == "long name")
             __instance.alltrackslist.Sort((t1, t2) => t1.trackname_long == null ? -1 : t1.trackname_long.Trim().CompareTo(t2.trackname_long.Trim()));
         else if (sortcriteria == "length")
-            __instance.alltrackslist.Sort((t1, t2) => CompareLength(t1, t2));
+            __instance.alltrackslist.Sort(CompareLength);
         else if (sortcriteria == "artist")
-            __instance.alltrackslist.Sort((t1, t2) => CompareArtist(t1, t2));
+            __instance.alltrackslist.Sort(CompareArtist);
+        else if (sortcriteria == "modified date")
+            __instance.alltrackslist.Sort(CompareModifiedDate);
         __instance.songindex = !anim ? GlobalVariables.levelselect_index : 0;
         __instance.populateSongNames(true);
         return false;

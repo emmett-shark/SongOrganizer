@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace SongOrganizer.Data;
@@ -11,6 +12,7 @@ public class Track : SingleTrackData
     public HashSet<int> collections { get; set; } = new();
     public float stars;
     public bool isFavorite { get; set; }
+    public DateTime modifiedDate { get; set; }
 
     public Track() { }
 

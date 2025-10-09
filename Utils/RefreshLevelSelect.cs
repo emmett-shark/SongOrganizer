@@ -8,6 +8,7 @@ using BaboonAPI.Internal.BaseGame;
 using Microsoft.FSharp.Collections;
 using Newtonsoft.Json;
 using SongOrganizer.Data;
+using TootTallyDiffCalcLibs;
 using TrombLoader.CustomTracks;
 using TrombLoader.Helpers;
 using static SongOrganizer.Utils.TootTallyWebClient;
@@ -41,7 +42,8 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
         Plugin.TrackDict.Clear();
         allTracks.ForEach(track =>
         {
-            bool isBaseGame = TrackLookup.lookup(track.trackref) is BaseGameTrack;
+            var baboonTrack = TrackLookup.lookup(track.trackref);
+            bool isBaseGame = baboonTrack is BaseGameTrack;
             track.difficulty = track.difficulty > 10 ? 10 : track.difficulty;
             track.difficulty = track.difficulty < 0 ? 0 : track.difficulty;
             Track newTrack = new(track);
@@ -57,6 +59,8 @@ public class RefreshLevelSelect : TracksLoadedEvent.Listener
             newTrack.collections.Add(allTrackCollection._index);
             newTrack.json_format = track.json_format;
             newTrack.track_folder = track.track_folder;
+            if (baboonTrack is CustomTrack)
+                newTrack.modifiedDate = Directory.GetLastWriteTime(((CustomTrack)baboonTrack).folderPath);
             Plugin.TrackDict.TryAdd(track.trackref, newTrack);
         });
         Plugin.Log.LogDebug($"Adding collections: {string.Join(", ", GlobalVariables.all_track_collections.Select(i => i._unique_id))}");
