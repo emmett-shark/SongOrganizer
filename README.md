@@ -14,6 +14,9 @@
 - Install [the mod](https://thunderstore.io/c/trombone-champ/p/emmett/SongOrganizer/) using r2modman. [Guide](https://trombone.wiki/#/installing-r2modman)
 
 ## Changelog
+v1.6.5
+- TC 1.29 Add tt calculations for dlc
+
 v1.6.4
 - Add "Modified Date" sort
 

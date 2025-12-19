@@ -106,7 +106,7 @@ public class LevelSelectControllerUpdateGraphPatch : MonoBehaviour
     {
         for (int i = 0; i < 5; i++)
         {
-            __instance.graphline.SetPosition(i, __instance.getGraphVector(i, Mathf.FloorToInt(UnityEngine.Random.value * 100f)));
+            __instance.graphline.SetPosition(i, __instance.getGraphVector(i, Mathf.FloorToInt(Random.value * 100f)));
         }
         return false;
     }
@@ -206,11 +206,13 @@ public class LevelSelectControllerStartPatch : MonoBehaviour
         if (GlobalVariables.chosen_collection_index >= GlobalVariables.all_track_collections.Count)
         {
             GlobalVariables.chosen_collection_index = 0;
+            Plugin.Options.CollectionIndex.Value = 0;
         }
         GlobalVariables.levelselect_index = Plugin.Options.LastIndex.Value;
         if (GlobalVariables.levelselect_index >= GlobalVariables.all_track_collections[GlobalVariables.chosen_collection_index].all_tracks.Count)
         {
             GlobalVariables.levelselect_index = 0;
+            Plugin.Options.LastIndex.Value = 0;
         }
         Plugin.FavoriteButtons.Clear();
     }

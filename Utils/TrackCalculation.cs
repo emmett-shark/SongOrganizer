@@ -29,20 +29,34 @@ public class TrackCalculation
         });
         Task.Run(() =>
         {
-            var trackassetDir = $"{Application.streamingAssetsPath}/trackassets/";
-            Directory.GetDirectories(trackassetDir)
-                .Select(i => i.Substring(trackassetDir.Length))
-                .Where(i => i != "freeplay")
-                .AsParallel()
-                .WithDegreeOfParallelism(Plugin.MAX_PARALLELISM)
-                .ForAll(trackref => CalculateBaseStars(trackref));
+            var trackassetDir = $"{Application.streamingAssetsPath}/trackassets";
+            CalculateBaseGamePath(trackassetDir);
             Plugin.Log.LogDebug($"Base star calculation elapsed: {DateTime.Now - start}");
+        });
+        Task.Run(() =>
+        {
+            var trackassetDlcDir = $"{Application.streamingAssetsPath}/trackassets_dlc";
+            var dlcs = Directory.GetDirectories(trackassetDlcDir);
+            foreach (var dlcDir in dlcs)
+            {
+                CalculateBaseGamePath(dlcDir);
+            }
+            Plugin.Log.LogDebug($"Base DLC star calculation elapsed: {DateTime.Now - start}");
         });
     }
 
-    private static void CalculateBaseStars(string trackref)
+    private static void CalculateBaseGamePath(string path)
     {
-        using var chart = ChartReader.ReadBaseGame(trackref);
+        Directory.GetDirectories(path)
+            .AsParallel()
+            .WithDegreeOfParallelism(Plugin.MAX_PARALLELISM)
+            .ForAll(p => CalculateBaseStars(p.Substring(path.Length + 1), p));
+    }
+
+    private static void CalculateBaseStars(string trackref, string path)
+    {
+        if (trackref == "freeplay") return;
+        using var chart = ChartReader.ReadBaseGame(trackref, path);
         ProcessChart(chart);
     }
 
