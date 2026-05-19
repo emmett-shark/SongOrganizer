@@ -93,7 +93,9 @@ public class LevelSelectControllerSortTracksPatch : MonoBehaviour
             __instance.alltrackslist.Sort(CompareArtist);
         else if (sortcriteria == "modified date")
             __instance.alltrackslist.Sort(CompareModifiedDate);
-        __instance.songindex = !anim ? GlobalVariables.levelselect_index : 0;
+        __instance.songindex = anim || GlobalVariables.levelselect_index >= __instance.alltrackslist.Count
+            ? 0
+            : GlobalVariables.levelselect_index;
         __instance.populateSongNames(true);
         return false;
     }
